@@ -16,12 +16,6 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useTheme } from "../src/context/ThemeContext";
 import { getExpenses, getCustomCategories, deleteExpense } from "../src/storage/expenseStorage";
 import { getBudgets, BudgetLimit } from "../src/storage/budgetStorage";
-import {
-  isNotificationsEnabled,
-  requestNotificationPermissions,
-  scheduleDailyReminders,
-  cancelDailyReminders,
-} from "../src/storage/notificationService";
 import { Expense, CategoryInfo, getCategoryInfo } from "../src/types/expense";
 import {
   filterByToday,
@@ -33,7 +27,7 @@ import {
   formatCompactCurrency,
   groupByCategory,
 } from "../src/utils/helpers";
-import { format } from "date-fns";
+import { format, subMonths } from "date-fns";
 import DonutChart from "../src/components/DonutChart";
 import ExpenseItem from "../src/components/ExpenseItem";
 import EmptyState from "../src/components/EmptyState";
@@ -47,7 +41,6 @@ export default function HomeScreen() {
   const [budgets, setBudgets] = useState<BudgetLimit[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<FilterType>("all");
-  const [notifEnabled, setNotifEnabled] = useState(false);
   const [activeCard, setActiveCard] = useState(0);
   const router = useRouter();
   const CARD_WIDTH = Dimensions.get("window").width - 40; // 20px margin each side
@@ -58,8 +51,6 @@ export default function HomeScreen() {
     setExpenses(data);
     setCustomCats(cats);
     setBudgets(b);
-    const ne = await isNotificationsEnabled();
-    setNotifEnabled(ne);
   }, []);
 
   useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
@@ -93,6 +84,12 @@ export default function HomeScreen() {
 
   const monthExpenses = filterByMonth(expenses).filter((e) => e.type !== "income");
   const yearExpenses = filterByYear(expenses).filter((e) => e.type !== "income");
+  const prevMonthExpenses = filterByMonth(expenses, subMonths(new Date(), 1)).filter((e) => e.type !== "income");
+  const prevMonthSpent = getExpenseTotal(prevMonthExpenses);
+  const monthSpendDelta = prevMonthSpent > 0 ? ((monthSpent - prevMonthSpent) / prevMonthSpent) * 100 : 0;
+  const topCategory = groupByCategory(monthExpenses, customCats)[0];
+  const topCategoryInfo = topCategory ? getCategoryInfo(topCategory.category, customCats) : null;
+  const dailyAverage = monthSpent / Math.max(new Date().getDate(), 1);
 
   // Budget warnings
   const budgetWarnings = budgets.map((b) => {
@@ -127,34 +124,19 @@ export default function HomeScreen() {
             <Text style={{ fontSize: 28, color: colors.text, fontWeight: "800" }}>Welcome back 👋</Text>
           </View>
           <TouchableOpacity
-            onPress={async () => {
-              if (notifEnabled) {
-                await cancelDailyReminders();
-                setNotifEnabled(false);
-                Alert.alert("Notifications Off", "Daily reminders disabled.");
-              } else {
-                const granted = await requestNotificationPermissions();
-                if (granted) {
-                  await scheduleDailyReminders();
-                  setNotifEnabled(true);
-                  Alert.alert("Notifications On 🔔", "You'll get reminders at 8 AM and 9 PM daily.");
-                } else {
-                  Alert.alert("Permission Denied", "Please enable notifications in your phone settings.");
-                }
-              }
-            }}
+            onPress={() => router.push("/settings")}
             style={{
               width: 44,
               height: 44,
               borderRadius: 16,
-              backgroundColor: notifEnabled ? colors.primaryLight : colors.card,
+              backgroundColor: colors.card,
               alignItems: "center",
               justifyContent: "center",
               borderWidth: 1,
-              borderColor: notifEnabled ? colors.primary : colors.cardBorder,
+              borderColor: colors.cardBorder,
             }}
           >
-            <Text style={{ fontSize: 18 }}>{notifEnabled ? "🔔" : "🔕"}</Text>
+            <Text style={{ fontSize: 18 }}>⚙️</Text>
           </TouchableOpacity>
         </View>
 
@@ -294,6 +276,39 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {/* Insights */}
+        <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 12 }}>Insights</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+            <View style={[cs.insightCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <Text style={cs.insightIcon}>📈</Text>
+              <Text style={[cs.insightLabel, { color: colors.textSecondary }]}>Month trend</Text>
+              <Text style={[cs.insightValue, { color: monthSpendDelta > 0 ? colors.danger : colors.primary }]}>
+                {prevMonthSpent > 0 ? `${Math.abs(monthSpendDelta).toFixed(0)}% ${monthSpendDelta > 0 ? "up" : "down"}` : "New data"}
+              </Text>
+            </View>
+            <View style={[cs.insightCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <Text style={cs.insightIcon}>📅</Text>
+              <Text style={[cs.insightLabel, { color: colors.textSecondary }]}>Daily avg</Text>
+              <Text style={[cs.insightValue, { color: colors.text }]}>{formatCurrency(Math.round(dailyAverage))}</Text>
+            </View>
+            <View style={[cs.insightCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <Text style={cs.insightIcon}>{topCategoryInfo?.emoji || "📦"}</Text>
+              <Text style={[cs.insightLabel, { color: colors.textSecondary }]}>Top category</Text>
+              <Text style={[cs.insightValue, { color: colors.text }]} numberOfLines={1}>
+                {topCategoryInfo ? topCategoryInfo.label : "No spend"}
+              </Text>
+            </View>
+            <View style={[cs.insightCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <Text style={cs.insightIcon}>🎯</Text>
+              <Text style={[cs.insightLabel, { color: colors.textSecondary }]}>Budget risk</Text>
+              <Text style={[cs.insightValue, { color: budgetWarnings.length > 0 ? colors.danger : colors.primary }]}>
+                {budgetWarnings.length > 0 ? `${budgetWarnings.length} alerts` : "On track"}
+              </Text>
+            </View>
+          </ScrollView>
+        </View>
+
         {/* Recent Transactions */}
         <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
@@ -371,5 +386,24 @@ const cs = StyleSheet.create({
     backgroundColor: "rgba(75, 122, 91, 0.1)",
     bottom: -30,
     left: -20,
+  },
+  insightCard: {
+    width: 142,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+  },
+  insightIcon: {
+    fontSize: 20,
+    marginBottom: 8,
+  },
+  insightLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  insightValue: {
+    fontSize: 16,
+    fontWeight: "900",
+    marginTop: 4,
   },
 });

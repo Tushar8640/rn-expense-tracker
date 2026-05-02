@@ -13,8 +13,8 @@ const TAB_CONFIG = [
   { name: "index", emoji: "🏠", label: "Home" },
   { name: "expenses", emoji: "📋", label: "History" },
   { name: "add", emoji: "➕", label: "Add", isCenter: true },
+  { name: "budgets", emoji: "🎯", label: "Budget" },
   { name: "reports", emoji: "📊", label: "Reports" },
-  { name: "settings", emoji: "⚙️", label: "More" },
 ];
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
@@ -104,8 +104,9 @@ function AppContent() {
         <Tabs.Screen name="index" />
         <Tabs.Screen name="expenses" />
         <Tabs.Screen name="add" />
+        <Tabs.Screen name="budgets" />
         <Tabs.Screen name="reports" />
-        <Tabs.Screen name="settings" />
+        <Tabs.Screen name="settings" options={{ href: null }} />
         <Tabs.Screen name="edit" options={{ href: null }} />
       </Tabs>
     </>

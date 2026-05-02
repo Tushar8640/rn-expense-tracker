@@ -79,6 +79,11 @@ export default function ExpenseItem({
               {expense.note}
             </Text>
           ) : null}
+          {expense.receiptUri ? (
+            <Text style={styles.receipt} numberOfLines={1}>
+              Receipt attached
+            </Text>
+          ) : null}
         </View>
 
         {/* Amount & Date */}
@@ -171,6 +176,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#7A8F84",
     marginTop: 2,
+  },
+  receipt: {
+    fontSize: 11,
+    color: "#4B7A5B",
+    marginTop: 2,
+    fontWeight: "600",
   },
   amount: {
     fontSize: 15,

@@ -62,22 +62,31 @@ export const requestNotificationPermissions = async (): Promise<boolean> => {
   }
 };
 
-// Schedule morning (8 AM) and night (9 PM) daily notifications
-export const scheduleDailyReminders = async (): Promise<void> => {
+const configureNotificationHandler = async (): Promise<boolean> => {
   try {
     const N = await getNotifications();
-    if (!N) return;
-
-    // Set handler
+    if (!N) return false;
     N.setNotificationHandler({
       handleNotification: async () => ({
-        shouldShowAlert: true,
         shouldPlaySound: true,
         shouldSetBadge: false,
         shouldShowBanner: true,
         shouldShowList: true,
       }),
     });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// Schedule morning (8 AM) and night (9 PM) daily notifications
+export const scheduleDailyReminders = async (): Promise<boolean> => {
+  try {
+    const N = await getNotifications();
+    if (!N) return false;
+
+    await configureNotificationHandler();
 
     // Cancel all existing
     await N.cancelAllScheduledNotificationsAsync();
@@ -94,6 +103,7 @@ export const scheduleDailyReminders = async (): Promise<void> => {
         type: N.SchedulableTriggerInputTypes.DAILY,
         hour: 8,
         minute: 0,
+        ...(Platform.OS === "android" && { channelId: "reminders" }),
       },
     });
 
@@ -109,12 +119,15 @@ export const scheduleDailyReminders = async (): Promise<void> => {
         type: N.SchedulableTriggerInputTypes.DAILY,
         hour: 21,
         minute: 0,
+        ...(Platform.OS === "android" && { channelId: "reminders" }),
       },
     });
 
     await AsyncStorage.setItem(NOTIF_ENABLED_KEY, "true");
+    return true;
   } catch {
-    // Silently fail in Expo Go
+    await AsyncStorage.setItem(NOTIF_ENABLED_KEY, "false");
+    return false;
   }
 };
 
@@ -140,6 +153,7 @@ export const isNotificationsEnabled = async (): Promise<boolean> => {
 // Initialize — call on app start
 export const initNotifications = async (): Promise<void> => {
   try {
+    await configureNotificationHandler();
     const enabled = await isNotificationsEnabled();
     if (enabled) {
       const hasPermission = await requestNotificationPermissions();
@@ -149,5 +163,16 @@ export const initNotifications = async (): Promise<void> => {
     }
   } catch {
     // Silently fail
+  }
+};
+
+export const getScheduledReminderCount = async (): Promise<number> => {
+  try {
+    const N = await getNotifications();
+    if (!N) return 0;
+    const scheduled = await N.getAllScheduledNotificationsAsync();
+    return scheduled.length;
+  } catch {
+    return 0;
   }
 };

@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import * as DocumentPicker from "expo-document-picker";
 import { TransactionType, Expense } from "../src/types/expense";
 import { getExpenses, updateExpense, deleteExpense } from "../src/storage/expenseStorage";
 import { formatDate } from "../src/utils/helpers";
@@ -30,6 +31,8 @@ export default function EditExpenseScreen() {
   const [category, setCategory] = useState("food");
   const [note, setNote] = useState("");
   const [date, setDate] = useState(new Date());
+  const [receiptUri, setReceiptUri] = useState<string | undefined>();
+  const [receiptName, setReceiptName] = useState<string | undefined>();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -48,6 +51,8 @@ export default function EditExpenseScreen() {
       setCategory(found.category);
       setNote(found.note);
       setDate(new Date(found.date));
+      setReceiptUri(found.receiptUri);
+      setReceiptName(found.receiptName);
       setLoaded(true);
     } else {
       Alert.alert("Error", "Transaction not found.");
@@ -80,6 +85,8 @@ export default function EditExpenseScreen() {
         category,
         date: date.toISOString(),
         note: note.trim(),
+        receiptUri,
+        receiptName,
         createdAt: new Date().toISOString(),
       });
 
@@ -109,6 +116,18 @@ export default function EditExpenseScreen() {
         },
       ]
     );
+  };
+
+  const pickReceipt = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ["image/*", "application/pdf"],
+      copyToCacheDirectory: true,
+    });
+
+    if (!result.canceled && result.assets?.[0]) {
+      setReceiptUri(result.assets[0].uri);
+      setReceiptName(result.assets[0].name);
+    }
   };
 
   if (!loaded) {
@@ -275,6 +294,33 @@ export default function EditExpenseScreen() {
                 numberOfLines={2}
               />
             </View>
+          </View>
+
+          <View style={s.fieldGroup}>
+            <Text style={[s.fieldLabel, { color: colors.textSecondary }]}>Receipt (optional)</Text>
+            <TouchableOpacity
+              style={[s.inputCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+              onPress={pickReceipt}
+              activeOpacity={0.7}
+            >
+              <Text style={{ fontSize: 16 }}>🧾</Text>
+              <Text style={[s.dateText, { color: colors.text }]} numberOfLines={1}>
+                {receiptName || "Attach receipt or bill"}
+              </Text>
+              {receiptUri ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    setReceiptUri(undefined);
+                    setReceiptName(undefined);
+                  }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text style={{ color: colors.danger, fontSize: 16, fontWeight: "700" }}>×</Text>
+                </TouchableOpacity>
+              ) : (
+                <Text style={{ color: colors.textMuted, fontSize: 18 }}>＋</Text>
+              )}
+            </TouchableOpacity>
           </View>
 
           {/* Buttons */}

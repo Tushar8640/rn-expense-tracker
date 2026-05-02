@@ -14,11 +14,19 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import * as DocumentPicker from "expo-document-picker";
 import { TransactionType } from "../src/types/expense";
 import { saveExpense } from "../src/storage/expenseStorage";
 import { generateId, formatDate } from "../src/utils/helpers";
 import CategorySelect from "../src/components/CategorySelect";
 import { useTheme } from "../src/context/ThemeContext";
+
+const TEMPLATES = [
+  { label: "Lunch", type: "expense" as TransactionType, category: "food", amount: "150", note: "Lunch" },
+  { label: "Ride", type: "expense" as TransactionType, category: "transport", amount: "100", note: "Transport" },
+  { label: "Internet", type: "expense" as TransactionType, category: "bills", amount: "1000", note: "Internet bill" },
+  { label: "Salary", type: "income" as TransactionType, category: "salary", amount: "", note: "Salary" },
+];
 
 export default function AddExpenseScreen() {
   const { colors } = useTheme();
@@ -28,6 +36,8 @@ export default function AddExpenseScreen() {
   const [category, setCategory] = useState("food");
   const [note, setNote] = useState("");
   const [date, setDate] = useState(new Date());
+  const [receiptUri, setReceiptUri] = useState<string | undefined>();
+  const [receiptName, setReceiptName] = useState<string | undefined>();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -56,6 +66,8 @@ export default function AddExpenseScreen() {
         category,
         date: date.toISOString(),
         note: note.trim(),
+        receiptUri,
+        receiptName,
         createdAt: new Date().toISOString(),
       });
 
@@ -67,6 +79,8 @@ export default function AddExpenseScreen() {
             setNote("");
             setCategory("food");
             setDate(new Date());
+            setReceiptUri(undefined);
+            setReceiptName(undefined);
             setType("expense");
             router.push("/");
           },
@@ -84,7 +98,28 @@ export default function AddExpenseScreen() {
     setNote("");
     setCategory("food");
     setDate(new Date());
+    setReceiptUri(undefined);
+    setReceiptName(undefined);
     setType("expense");
+  };
+
+  const applyTemplate = (template: (typeof TEMPLATES)[number]) => {
+    setType(template.type);
+    setCategory(template.category);
+    setAmount(template.amount);
+    setNote(template.note);
+  };
+
+  const pickReceipt = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ["image/*", "application/pdf"],
+      copyToCacheDirectory: true,
+    });
+
+    if (!result.canceled && result.assets?.[0]) {
+      setReceiptUri(result.assets[0].uri);
+      setReceiptName(result.assets[0].name);
+    }
   };
 
   return (
@@ -102,6 +137,21 @@ export default function AddExpenseScreen() {
           {/* Header */}
           <View style={s.header}>
             <Text style={[s.headerTitle, { color: colors.text }]}>Add transaction</Text>
+          </View>
+
+          <View style={s.fieldGroup}>
+            <Text style={[s.fieldLabel, { color: colors.textSecondary }]}>Quick templates</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+              {TEMPLATES.map((template) => (
+                <TouchableOpacity
+                  key={template.label}
+                  onPress={() => applyTemplate(template)}
+                  style={[s.templateChip, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+                >
+                  <Text style={[s.templateText, { color: colors.text }]}>{template.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
 
           {/* Income / Expense Toggle */}
@@ -234,6 +284,33 @@ export default function AddExpenseScreen() {
             </View>
           </View>
 
+          <View style={s.fieldGroup}>
+            <Text style={[s.fieldLabel, { color: colors.textSecondary }]}>Receipt (optional)</Text>
+            <TouchableOpacity
+              style={[s.inputCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+              onPress={pickReceipt}
+              activeOpacity={0.7}
+            >
+              <Text style={{ fontSize: 16 }}>🧾</Text>
+              <Text style={[s.dateText, { color: colors.text }]} numberOfLines={1}>
+                {receiptName || "Attach receipt or bill"}
+              </Text>
+              {receiptUri ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    setReceiptUri(undefined);
+                    setReceiptName(undefined);
+                  }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text style={{ color: colors.danger, fontSize: 16, fontWeight: "700" }}>×</Text>
+                </TouchableOpacity>
+              ) : (
+                <Text style={{ color: colors.textMuted, fontSize: 18 }}>＋</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
           {/* Buttons */}
           <View style={s.btnRow}>
             <TouchableOpacity
@@ -301,6 +378,16 @@ const s = StyleSheet.create({
   toggleText: {
     fontSize: 15,
     fontWeight: "600",
+  },
+  templateChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 1.5,
+  },
+  templateText: {
+    fontSize: 13,
+    fontWeight: "700",
   },
   inputCard: {
     borderRadius: 18,

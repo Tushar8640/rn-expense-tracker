@@ -7,6 +7,8 @@ export interface Expense {
   category: string; // now a string key, supports custom categories
   date: string; // ISO string
   note: string;
+  receiptUri?: string;
+  receiptName?: string;
   createdAt: string; // ISO string
 }
 

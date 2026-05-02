@@ -33,6 +33,7 @@ import CategoryBreakdown from "../src/components/CategoryBreakdown";
 import SummaryCard from "../src/components/SummaryCard";
 import EmptyState from "../src/components/EmptyState";
 import { useTheme } from "../src/context/ThemeContext";
+import { exportPrintableReport, exportTransactionsCsv } from "../src/storage/reportExportService";
 
 type ReportType = "monthly" | "yearly";
 
@@ -132,6 +133,21 @@ export default function ReportsScreen() {
     } catch {
       Alert.alert("Error", "Failed to share report.");
     }
+  };
+
+  const getReportTitle = () =>
+    reportType === "monthly"
+      ? `Monthly Report - ${format(selectedDate, "MMMM yyyy")}`
+      : `Yearly Report - ${selectedYear}`;
+
+  const handleExportCsv = async () => {
+    const result = await exportTransactionsCsv(currentExpenses, getReportTitle(), customCats);
+    if (!result.success) Alert.alert("Export failed", result.message);
+  };
+
+  const handleExportPrintable = async () => {
+    const result = await exportPrintableReport(currentExpenses, getReportTitle(), customCats);
+    if (!result.success) Alert.alert("Export failed", result.message);
   };
 
   const goToPrevPeriod = () => {
@@ -334,6 +350,22 @@ export default function ReportsScreen() {
               >
                 <Text style={s.shareBtnText}>Share Report 📤</Text>
               </TouchableOpacity>
+              <View style={s.exportRow}>
+                <TouchableOpacity
+                  onPress={handleExportCsv}
+                  style={[s.exportBtn, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[s.exportBtnText, { color: colors.text }]}>CSV</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleExportPrintable}
+                  style={[s.exportBtn, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[s.exportBtnText, { color: colors.text }]}>Printable</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </>
         )}
@@ -534,6 +566,22 @@ const s = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: "#FFFFFF",
+  },
+  exportRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 10,
+  },
+  exportBtn: {
+    flex: 1,
+    paddingVertical: 13,
+    borderRadius: 16,
+    alignItems: "center",
+    borderWidth: 1.5,
+  },
+  exportBtnText: {
+    fontSize: 14,
+    fontWeight: "800",
   },
   // Modals
   modalOverlay: {

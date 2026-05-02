@@ -23,16 +23,8 @@ import {
   importBackup,
   listAutoBackups,
   restoreAutoBackup,
-  deleteAutoBackup,
-  runAutoBackupIfNeeded,
   BackupInfo,
 } from "../src/storage/backupService";
-import {
-  getBudgets,
-  saveBudget,
-  deleteBudget,
-  BudgetLimit,
-} from "../src/storage/budgetStorage";
 import {
   getRecurringTransactions,
   saveRecurringTransaction,
@@ -45,21 +37,23 @@ import { DEFAULT_CATEGORIES, getCategoryInfo } from "../src/types/expense";
 import { getCustomCategories } from "../src/storage/expenseStorage";
 import { CategoryInfo, TransactionType } from "../src/types/expense";
 import { generateId, formatCurrency } from "../src/utils/helpers";
+import {
+  cancelDailyReminders,
+  getScheduledReminderCount,
+  isNotificationsEnabled,
+  requestNotificationPermissions,
+  scheduleDailyReminders,
+} from "../src/storage/notificationService";
 
 export default function SettingsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
   const [backups, setBackups] = useState<BackupInfo[]>([]);
-  const [budgets, setBudgets] = useState<BudgetLimit[]>([]);
   const [recurring, setRecurring] = useState<RecurringTransaction[]>([]);
   const [customCats, setCustomCats] = useState<CategoryInfo[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
-
-  // Budget form
-  const [showBudgetForm, setShowBudgetForm] = useState(false);
-  const [budgetCat, setBudgetCat] = useState("food");
-  const [budgetAmount, setBudgetAmount] = useState("");
-  const [budgetPeriod, setBudgetPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [notifEnabled, setNotifEnabled] = useState(false);
+  const [scheduledCount, setScheduledCount] = useState(0);
 
   // Recurring form
   const [showRecurringForm, setShowRecurringForm] = useState(false);
@@ -70,19 +64,21 @@ export default function SettingsScreen() {
   const [recPattern, setRecPattern] = useState<RecurrencePattern>("monthly");
 
   // Category picker
-  const [showCatPicker, setShowCatPicker] = useState<"budget" | "recurring" | null>(null);
+  const [showCatPicker, setShowCatPicker] = useState<"recurring" | null>(null);
 
   const loadAll = useCallback(async () => {
-    const [b, bu, r, cc] = await Promise.all([
+    const [b, r, cc, ne, count] = await Promise.all([
       listAutoBackups(),
-      getBudgets(),
       getRecurringTransactions(),
       getCustomCategories(),
+      isNotificationsEnabled(),
+      getScheduledReminderCount(),
     ]);
     setBackups(b);
-    setBudgets(bu);
     setRecurring(r);
     setCustomCats(cc);
+    setNotifEnabled(ne);
+    setScheduledCount(count);
   }, []);
 
   useFocusEffect(useCallback(() => { loadAll(); }, [loadAll]));
@@ -112,25 +108,33 @@ export default function SettingsScreen() {
     ]);
   };
 
-  // --- Budget handlers ---
-  const handleSaveBudget = async () => {
-    const amt = parseFloat(budgetAmount);
-    if (!budgetAmount || isNaN(amt) || amt <= 0) {
-      Alert.alert("Error", "Enter a valid amount.");
+  const handleToggleNotifications = async (enabled: boolean) => {
+    setLoading("notifications");
+    if (enabled) {
+      const granted = await requestNotificationPermissions();
+      if (!granted) {
+        setLoading(null);
+        setNotifEnabled(false);
+        Alert.alert("Permission Needed", "Please allow notifications from your phone settings.");
+        return;
+      }
+
+      const scheduled = await scheduleDailyReminders();
+      setLoading(null);
+      await loadAll();
+      Alert.alert(
+        scheduled ? "Notifications On" : "Notifications Failed",
+        scheduled
+          ? "Daily reminders are scheduled for 8 AM and 9 PM."
+          : "Could not schedule reminders on this device. Expo Go has notification limitations; use a development build for reliable testing."
+      );
       return;
     }
-    await saveBudget({ categoryKey: budgetCat, amount: amt, period: budgetPeriod });
-    setShowBudgetForm(false);
-    setBudgetAmount("");
-    await loadAll();
-  };
 
-  const handleDeleteBudget = (catKey: string) => {
-    const cat = getCategoryInfo(catKey, customCats);
-    Alert.alert("Remove Budget", `Remove budget for ${cat.label}?`, [
-      { text: "Cancel", style: "cancel" },
-      { text: "Remove", style: "destructive", onPress: async () => { await deleteBudget(catKey); await loadAll(); }},
-    ]);
+    await cancelDailyReminders();
+    setLoading(null);
+    await loadAll();
+    Alert.alert("Notifications Off", "Daily reminders disabled.");
   };
 
   // --- Recurring handlers ---
@@ -188,14 +192,13 @@ export default function SettingsScreen() {
             data={allCats}
             keyExtractor={(i) => i.key}
             renderItem={({ item }) => {
-              const sel = showCatPicker === "budget" ? budgetCat : recCategory;
+              const sel = recCategory;
               const isActive = sel === item.key;
               return (
                 <TouchableOpacity
                   style={{ flexDirection: "row", alignItems: "center", padding: 14, paddingHorizontal: 20, gap: 12, backgroundColor: isActive ? colors.primaryLight : "transparent" }}
                   onPress={() => {
-                    if (showCatPicker === "budget") setBudgetCat(item.key);
-                    else setRecCategory(item.key);
+                    setRecCategory(item.key);
                     setShowCatPicker(null);
                   }}
                 >
@@ -243,98 +246,25 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Budget Limits */}
-        <View style={{ paddingHorizontal: 20, marginTop: 28 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>💰 Budget Limits</Text>
-            <TouchableOpacity
-              style={{ paddingHorizontal: 14, paddingVertical: 6, borderRadius: 12, backgroundColor: colors.primaryLight }}
-              onPress={() => setShowBudgetForm(true)}
-            >
-              <Text style={{ fontSize: 12, fontWeight: "700", color: colors.primary }}>+ Add</Text>
-            </TouchableOpacity>
-          </View>
-
-          {budgets.length > 0 ? (
-            <View style={[st.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, marginTop: 12 }]}>
-              {budgets.map((b, i) => {
-                const cat = getCategoryInfo(b.categoryKey, customCats);
-                return (
-                  <View key={b.categoryKey}>
-                    <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 12, gap: 10 }}>
-                      <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: cat.color + "15", alignItems: "center", justifyContent: "center" }}>
-                        <Text style={{ fontSize: 16 }}>{cat.emoji}</Text>
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>{cat.label}</Text>
-                        <Text style={{ fontSize: 11, color: colors.textSecondary }}>{formatCurrency(b.amount)} / {b.period}</Text>
-                      </View>
-                      <TouchableOpacity onPress={() => handleDeleteBudget(b.categoryKey)} style={{ width: 28, height: 28, borderRadius: 10, backgroundColor: colors.dangerLight, alignItems: "center", justifyContent: "center" }}>
-                        <Text style={{ color: colors.danger, fontSize: 13, fontWeight: "700" }}>✕</Text>
-                      </TouchableOpacity>
-                    </View>
-                    {i < budgets.length - 1 && <View style={{ height: 1, backgroundColor: colors.cardBorder }} />}
-                  </View>
-                );
-              })}
+        {/* Notification Reminders */}
+        <View style={[st.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, marginHorizontal: 20, marginTop: 16 }]}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <Text style={{ fontSize: 24 }}>{notifEnabled ? "🔔" : "🔕"}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>Daily Reminders</Text>
+              <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
+                {notifEnabled ? `${scheduledCount} reminders scheduled` : "8 AM and 9 PM reminders are off"}
+              </Text>
             </View>
-          ) : (
-            <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 8 }}>No budget limits set. Add one to track spending.</Text>
-          )}
+            <Switch
+              value={notifEnabled}
+              onValueChange={handleToggleNotifications}
+              disabled={loading === "notifications"}
+              trackColor={{ false: "#E8F0EB", true: "#4B7A5B" }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
         </View>
-
-        {/* Budget Form Modal */}
-        {showBudgetForm && (
-          <Modal transparent animationType="slide">
-            <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "flex-end" }} onPress={() => setShowBudgetForm(false)}>
-              <Pressable style={{ backgroundColor: colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 }}>
-                <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 16 }}>Set Budget Limit</Text>
-
-                <Text style={{ fontSize: 12, fontWeight: "600", color: colors.textSecondary, marginBottom: 6 }}>Category</Text>
-                <TouchableOpacity
-                  style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.bg, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: colors.cardBorder, marginBottom: 14 }}
-                  onPress={() => setShowCatPicker("budget")}
-                >
-                  <Text style={{ fontSize: 18 }}>{getCategoryInfo(budgetCat, customCats).emoji}</Text>
-                  <Text style={{ flex: 1, fontSize: 15, fontWeight: "600", color: colors.text }}>{getCategoryInfo(budgetCat, customCats).label}</Text>
-                  <Text style={{ color: colors.textMuted }}>▾</Text>
-                </TouchableOpacity>
-
-                <Text style={{ fontSize: 12, fontWeight: "600", color: colors.textSecondary, marginBottom: 6 }}>Amount</Text>
-                <TextInput
-                  style={{ backgroundColor: colors.bg, borderRadius: 14, padding: 14, fontSize: 18, fontWeight: "700", color: colors.text, borderWidth: 1, borderColor: colors.cardBorder, marginBottom: 14 }}
-                  placeholder="0"
-                  placeholderTextColor={colors.textMuted}
-                  keyboardType="decimal-pad"
-                  value={budgetAmount}
-                  onChangeText={setBudgetAmount}
-                />
-
-                <Text style={{ fontSize: 12, fontWeight: "600", color: colors.textSecondary, marginBottom: 6 }}>Period</Text>
-                <View style={{ flexDirection: "row", gap: 8, marginBottom: 20 }}>
-                  {(["monthly", "yearly"] as const).map((p) => (
-                    <TouchableOpacity
-                      key={p}
-                      style={{ flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: "center", backgroundColor: budgetPeriod === p ? colors.primary : colors.bg, borderWidth: 1, borderColor: budgetPeriod === p ? colors.primary : colors.cardBorder }}
-                      onPress={() => setBudgetPeriod(p)}
-                    >
-                      <Text style={{ fontSize: 14, fontWeight: "600", color: budgetPeriod === p ? "#FFF" : colors.textSecondary }}>{p === "monthly" ? "Monthly" : "Yearly"}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-
-                <View style={{ flexDirection: "row", gap: 10 }}>
-                  <TouchableOpacity style={{ flex: 1, paddingVertical: 14, borderRadius: 16, backgroundColor: colors.bg, alignItems: "center", borderWidth: 1, borderColor: colors.cardBorder }} onPress={() => setShowBudgetForm(false)}>
-                    <Text style={{ fontSize: 15, fontWeight: "700", color: colors.textSecondary }}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={{ flex: 1, paddingVertical: 14, borderRadius: 16, backgroundColor: colors.primary, alignItems: "center" }} onPress={handleSaveBudget}>
-                    <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFF" }}>Save</Text>
-                  </TouchableOpacity>
-                </View>
-              </Pressable>
-            </Pressable>
-          </Modal>
-        )}
 
         {/* Recurring Transactions */}
         <View style={{ paddingHorizontal: 20, marginTop: 28 }}>
