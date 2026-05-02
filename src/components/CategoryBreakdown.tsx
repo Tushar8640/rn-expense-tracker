@@ -1,21 +1,23 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { getCategoryInfo } from "../types/expense";
+import { CategoryInfo, getCategoryInfo } from "../types/expense";
 import { formatCurrency } from "../utils/helpers";
 
 interface CategoryBreakdownProps {
   data: { category: string; total: number; count: number }[];
   grandTotal: number;
+  customCategories?: CategoryInfo[];
 }
 
 export default function CategoryBreakdown({
   data,
   grandTotal,
+  customCategories = [],
 }: CategoryBreakdownProps) {
   return (
     <View style={styles.card}>
       {data.map((item, index) => {
-        const cat = getCategoryInfo(item.category);
+        const cat = getCategoryInfo(item.category, customCategories);
         const pct = grandTotal > 0 ? (item.total / grandTotal) * 100 : 0;
 
         return (

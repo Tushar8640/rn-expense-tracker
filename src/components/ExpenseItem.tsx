@@ -8,21 +8,23 @@ import {
   Pressable,
   Dimensions,
 } from "react-native";
-import { Expense, getCategoryInfo } from "../types/expense";
+import { CategoryInfo, Expense, getCategoryInfo } from "../types/expense";
 import { formatCurrency, formatDateShort } from "../utils/helpers";
 
 interface ExpenseItemProps {
   expense: Expense;
+  customCategories?: CategoryInfo[];
   onEdit?: () => void;
   onDelete?: () => void;
 }
 
 export default function ExpenseItem({
   expense,
+  customCategories = [],
   onEdit,
   onDelete,
 }: ExpenseItemProps) {
-  const category = getCategoryInfo(expense.category);
+  const category = getCategoryInfo(expense.category, customCategories);
   const isIncome = expense.type === "income";
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });

@@ -321,6 +321,7 @@ export default function ReportsScreen() {
               <CategoryBreakdown
                 data={categoryData}
                 grandTotal={currentTotal}
+                customCategories={customCats}
               />
             </View>
 

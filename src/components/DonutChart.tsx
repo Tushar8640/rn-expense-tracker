@@ -80,7 +80,16 @@ export default function DonutChart({
           )}
           {centerValue && (
             <Text
-              style={{ fontSize: 18, color: "#1A2B23", fontWeight: "800" }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+              style={{
+                width: size - strokeWidth * 3,
+                textAlign: "center",
+                fontSize: 18,
+                color: "#1A2B23",
+                fontWeight: "800",
+              }}
             >
               {centerValue}
             </Text>

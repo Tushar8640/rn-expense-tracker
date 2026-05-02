@@ -23,6 +23,28 @@ export const formatCurrency = (amount: number): string => {
   });
 };
 
+export const formatCompactCurrency = (amount: number): string => {
+  const absAmount = Math.abs(amount);
+
+  if (absAmount <= 1000) {
+    return formatCurrency(amount);
+  }
+
+  const units = [
+    { value: 1_000_000_000, suffix: "B" },
+    { value: 1_000_000, suffix: "M" },
+    { value: 1_000, suffix: "K" },
+  ];
+  const unit = units.find((item) => absAmount >= item.value)!;
+  const compactValue = absAmount / unit.value;
+  const formatted =
+    compactValue >= 10
+      ? Math.round(compactValue).toString()
+      : Number(compactValue.toFixed(1)).toString();
+
+  return `৳${amount < 0 ? "-" : ""}${formatted}${unit.suffix}`;
+};
+
 export const formatDate = (dateStr: string): string => {
   return format(parseISO(dateStr), "dd MMM yyyy");
 };

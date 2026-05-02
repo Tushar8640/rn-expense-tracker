@@ -30,6 +30,7 @@ import {
   getIncome,
   getExpenseTotal,
   formatCurrency,
+  formatCompactCurrency,
   groupByCategory,
 } from "../src/utils/helpers";
 import { format } from "date-fns";
@@ -203,7 +204,7 @@ export default function HomeScreen() {
                 size={100}
                 strokeWidth={14}
                 centerLabel="Net"
-                centerValue={formatCurrency(income - spent)}
+                centerValue={formatCompactCurrency(income - spent)}
               />
             </View>
 
@@ -306,6 +307,7 @@ export default function HomeScreen() {
               <ExpenseItem
                 key={expense.id}
                 expense={expense}
+                customCategories={customCats}
                 onEdit={() => router.push({ pathname: "/edit", params: { id: expense.id } })}
                 onDelete={() => Alert.alert("Delete?", `Delete this transaction?`, [
                   { text: "Cancel", style: "cancel" },
