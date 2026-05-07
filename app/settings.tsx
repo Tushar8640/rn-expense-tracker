@@ -10,8 +10,6 @@ import {
   ActivityIndicator,
   Switch,
   TextInput,
-  Modal,
-  Pressable,
   FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -37,6 +35,7 @@ import { DEFAULT_CATEGORIES, getCategoryInfo } from "../src/types/expense";
 import { getCustomCategories } from "../src/storage/expenseStorage";
 import { CategoryInfo, TransactionType } from "../src/types/expense";
 import { generateId, formatCurrency } from "../src/utils/helpers";
+import KeyboardAwareBottomModal from "../src/components/KeyboardAwareBottomModal";
 import {
   cancelDailyReminders,
   getScheduledReminderCount,
@@ -179,9 +178,11 @@ export default function SettingsScreen() {
 
   // Category picker modal
   const renderCatPicker = () => (
-    <Modal visible={showCatPicker !== null} transparent animationType="slide">
-      <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "flex-end" }} onPress={() => setShowCatPicker(null)}>
-        <Pressable style={{ backgroundColor: colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingBottom: 40, maxHeight: "60%" }}>
+    <KeyboardAwareBottomModal
+      visible={showCatPicker !== null}
+      onClose={() => setShowCatPicker(null)}
+      sheetStyle={{ backgroundColor: colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingBottom: 40, maxHeight: "60%" }}
+    >
           <View style={{ flexDirection: "row", justifyContent: "space-between", padding: 16, borderBottomWidth: 1, borderBottomColor: colors.cardBorder }}>
             <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>Select Category</Text>
             <TouchableOpacity onPress={() => setShowCatPicker(null)}>
@@ -211,9 +212,7 @@ export default function SettingsScreen() {
               );
             }}
           />
-        </Pressable>
-      </Pressable>
-    </Modal>
+    </KeyboardAwareBottomModal>
   );
 
   return (
@@ -315,9 +314,11 @@ export default function SettingsScreen() {
 
         {/* Recurring Form Modal */}
         {showRecurringForm && (
-          <Modal transparent animationType="slide">
-            <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "flex-end" }} onPress={() => setShowRecurringForm(false)}>
-              <Pressable style={{ backgroundColor: colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 }}>
+          <KeyboardAwareBottomModal
+            visible={showRecurringForm}
+            onClose={() => setShowRecurringForm(false)}
+            sheetStyle={{ backgroundColor: colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 }}
+          >
                 <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 16 }}>Add Recurring Transaction</Text>
 
                 {/* Type */}
@@ -384,9 +385,7 @@ export default function SettingsScreen() {
                     <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFF" }}>Add</Text>
                   </TouchableOpacity>
                 </View>
-              </Pressable>
-            </Pressable>
-          </Modal>
+          </KeyboardAwareBottomModal>
         )}
 
         {/* Backup Section */}

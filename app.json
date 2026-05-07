@@ -19,6 +19,7 @@
     },
     "android": {
       "package": "com.tushar8640.expensetracker",
+      "softwareKeyboardLayoutMode": "resize",
       "permissions": [
         "POST_NOTIFICATIONS",
         "SCHEDULE_EXACT_ALARM"

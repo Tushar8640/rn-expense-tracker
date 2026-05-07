@@ -8,12 +8,15 @@ import {
   RefreshControl,
   StyleSheet,
   Modal,
+  Platform,
   FlatList,
   Pressable,
   TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useRouter } from "expo-router";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { format } from "date-fns";
 import { getExpenses, deleteExpense, getCustomCategories } from "../src/storage/expenseStorage";
 import { CategoryInfo, DEFAULT_CATEGORIES, Expense, TransactionType, getCategoryInfo } from "../src/types/expense";
 import {
@@ -27,7 +30,7 @@ import ExpenseItem from "../src/components/ExpenseItem";
 import EmptyState from "../src/components/EmptyState";
 import { useTheme } from "../src/context/ThemeContext";
 
-type FilterType = "all" | "today" | "month" | "year";
+type FilterType = "all" | "today" | "date" | "month" | "year";
 type TypeFilter = "all" | TransactionType;
 
 const MONTHS = [
@@ -38,6 +41,7 @@ const MONTHS = [
 const FILTERS: { key: FilterType; label: string }[] = [
   { key: "all", label: "All" },
   { key: "today", label: "Today" },
+  { key: "date", label: "Date" },
   { key: "month", label: "Month" },
   { key: "year", label: "Year" },
 ];
@@ -51,11 +55,11 @@ export default function ExpensesScreen() {
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [minAmount, setMinAmount] = useState("");
-  const [maxAmount, setMaxAmount] = useState("");
+  const [selectedDate, setSelectedDate] = useState(now);
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [refreshing, setRefreshing] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [showYearPicker, setShowYearPicker] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
@@ -103,22 +107,29 @@ export default function ExpensesScreen() {
   };
 
   const getPeriodExpenses = (): Expense[] => {
-    const selectedDate = new Date(selectedYear, selectedMonth, 1);
+    const selectedPeriodDate = new Date(selectedYear, selectedMonth, 1);
     switch (filter) {
       case "today":
         return filterByToday(expenses);
+      case "date":
+        return expenses.filter((expense) => {
+          const expenseDate = new Date(expense.date);
+          return (
+            expenseDate.getFullYear() === selectedDate.getFullYear() &&
+            expenseDate.getMonth() === selectedDate.getMonth() &&
+            expenseDate.getDate() === selectedDate.getDate()
+          );
+        });
       case "month":
-        return filterByMonth(expenses, selectedDate);
+        return filterByMonth(expenses, selectedPeriodDate);
       case "year":
-        return filterByYear(expenses, selectedDate);
+        return filterByYear(expenses, selectedPeriodDate);
       default:
         return expenses;
     }
   };
 
   const getFilteredExpenses = (): Expense[] => {
-    const min = parseFloat(minAmount);
-    const max = parseFloat(maxAmount);
     const normalizedQuery = query.trim().toLowerCase();
 
     return getPeriodExpenses().filter((expense) => {
@@ -131,10 +142,8 @@ export default function ExpensesScreen() {
 
       const matchesType = typeFilter === "all" || expense.type === typeFilter;
       const matchesCategory = categoryFilter === "all" || expense.category === categoryFilter;
-      const matchesMin = Number.isNaN(min) || expense.amount >= min;
-      const matchesMax = Number.isNaN(max) || expense.amount <= max;
 
-      return matchesQuery && matchesType && matchesCategory && matchesMin && matchesMax;
+      return matchesQuery && matchesType && matchesCategory;
     });
   };
 
@@ -144,8 +153,6 @@ export default function ExpensesScreen() {
     query.trim(),
     typeFilter !== "all",
     categoryFilter !== "all",
-    minAmount,
-    maxAmount,
   ].filter(Boolean).length;
   const availableYears = (() => {
     const years = new Set<number>();
@@ -157,7 +164,9 @@ export default function ExpensesScreen() {
   })();
 
   const goToPrevPeriod = () => {
-    if (filter === "month") {
+    if (filter === "date") {
+      setSelectedDate((date) => new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1));
+    } else if (filter === "month") {
       if (selectedMonth === 0) {
         setSelectedMonth(11);
         setSelectedYear((y) => y - 1);
@@ -170,7 +179,9 @@ export default function ExpensesScreen() {
   };
 
   const goToNextPeriod = () => {
-    if (filter === "month") {
+    if (filter === "date") {
+      setSelectedDate((date) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1));
+    } else if (filter === "month") {
       if (selectedMonth === 11) {
         setSelectedMonth(0);
         setSelectedYear((y) => y + 1);
@@ -179,6 +190,15 @@ export default function ExpensesScreen() {
       }
     } else if (filter === "year") {
       setSelectedYear((y) => y + 1);
+    }
+  };
+
+  const handleDateChange = (_event: any, date?: Date) => {
+    if (Platform.OS === "android") {
+      setShowDatePicker(false);
+    }
+    if (date) {
+      setSelectedDate(date);
     }
   };
 
@@ -267,41 +287,21 @@ export default function ExpensesScreen() {
           </TouchableOpacity>
         </ScrollView>
 
-        <View style={s.amountFilterRow}>
-          <TextInput
-            style={[s.amountFilterInput, { backgroundColor: colors.card, borderColor: colors.cardBorder, color: colors.text }]}
-            placeholder="Min"
-            placeholderTextColor={colors.textMuted}
-            keyboardType="decimal-pad"
-            value={minAmount}
-            onChangeText={setMinAmount}
-          />
-          <TextInput
-            style={[s.amountFilterInput, { backgroundColor: colors.card, borderColor: colors.cardBorder, color: colors.text }]}
-            placeholder="Max"
-            placeholderTextColor={colors.textMuted}
-            keyboardType="decimal-pad"
-            value={maxAmount}
-            onChangeText={setMaxAmount}
-          />
-          {activeAdvancedFilterCount > 0 && (
-            <TouchableOpacity
-              onPress={() => {
-                setQuery("");
-                setTypeFilter("all");
-                setCategoryFilter("all");
-                setMinAmount("");
-                setMaxAmount("");
-              }}
-              style={[s.clearFilterBtn, { backgroundColor: colors.dangerLight }]}
-            >
-              <Text style={[s.clearFilterText, { color: colors.danger }]}>Clear</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        {activeAdvancedFilterCount > 0 && (
+          <TouchableOpacity
+            onPress={() => {
+              setQuery("");
+              setTypeFilter("all");
+              setCategoryFilter("all");
+            }}
+            style={[s.clearFilterBtn, { backgroundColor: colors.dangerLight }]}
+          >
+            <Text style={[s.clearFilterText, { color: colors.danger }]}>Clear Filters</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
-      {(filter === "month" || filter === "year") && (
+      {(filter === "date" || filter === "month" || filter === "year") && (
         <View style={s.periodSelector}>
           <TouchableOpacity
             onPress={goToPrevPeriod}
@@ -310,7 +310,20 @@ export default function ExpensesScreen() {
             <Text style={[s.arrowText, { color: colors.primary }]}>‹</Text>
           </TouchableOpacity>
 
-          {filter === "month" ? (
+          {filter === "date" ? (
+            <TouchableOpacity
+              onPress={() => setShowDatePicker(true)}
+              style={[s.datePeriodBtn, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+            >
+              <Text style={[s.periodDayText, { color: colors.textSecondary }]}>{format(selectedDate, "EEEE")}</Text>
+              <View style={s.periodDateRow}>
+                <Text style={[s.periodBtnText, { color: colors.text, fontSize: 17 }]}>
+                  {format(selectedDate, "dd MMM yyyy")}
+                </Text>
+                <Text style={[s.periodDropdown, { color: colors.textMuted }]}>▾</Text>
+              </View>
+            </TouchableOpacity>
+          ) : filter === "month" ? (
             <View style={s.periodCenter}>
               <TouchableOpacity
                 onPress={() => setShowMonthPicker(true)}
@@ -344,6 +357,15 @@ export default function ExpensesScreen() {
             <Text style={[s.arrowText, { color: colors.primary }]}>›</Text>
           </TouchableOpacity>
         </View>
+      )}
+
+      {Platform.OS === "android" && showDatePicker && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="date"
+          display="calendar"
+          onChange={handleDateChange}
+        />
       )}
 
       {/* Expense List */}
@@ -457,6 +479,28 @@ export default function ExpensesScreen() {
         </Pressable>
       </Modal>
 
+      {Platform.OS === "ios" && (
+        <Modal visible={showDatePicker} transparent animationType="slide">
+          <Pressable style={s.modalOverlay} onPress={() => setShowDatePicker(false)}>
+            <Pressable style={[s.modalSheet, { backgroundColor: colors.card }]} onPress={() => {}}>
+              <View style={[s.modalHeader, { borderBottomColor: colors.cardBorder }]}>
+                <Text style={[s.modalTitle, { color: colors.text }]}>Select Date</Text>
+                <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                  <Text style={[s.modalDone, { color: colors.primary }]}>Done</Text>
+                </TouchableOpacity>
+              </View>
+              <DateTimePicker
+                value={selectedDate}
+                mode="date"
+                display="inline"
+                onChange={handleDateChange}
+                style={{ height: 340 }}
+              />
+            </Pressable>
+          </Pressable>
+        </Modal>
+      )}
+
       <Modal visible={showYearPicker} transparent animationType="slide">
         <Pressable style={s.modalOverlay} onPress={() => setShowYearPicker(false)}>
           <Pressable style={[s.modalSheet, { backgroundColor: colors.card }]} onPress={() => {}}>
@@ -561,22 +605,10 @@ const s = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
   },
-  amountFilterRow: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  amountFilterInput: {
-    flex: 1,
-    height: 42,
-    borderRadius: 13,
-    borderWidth: 1.5,
-    paddingHorizontal: 12,
-    fontSize: 13,
-    fontWeight: "700",
-  },
   clearFilterBtn: {
     height: 42,
-    paddingHorizontal: 14,
+    alignSelf: "flex-start",
+    paddingHorizontal: 16,
     borderRadius: 13,
     alignItems: "center",
     justifyContent: "center",
@@ -624,6 +656,24 @@ const s = StyleSheet.create({
   periodBtnText: {
     fontSize: 15,
     fontWeight: "700",
+  },
+  datePeriodBtn: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 14,
+    borderWidth: 1.5,
+  },
+  periodDayText: {
+    fontSize: 12,
+    fontWeight: "700",
+    marginBottom: 2,
+  },
+  periodDateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   periodDropdown: {
     fontSize: 14,

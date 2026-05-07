@@ -20,6 +20,7 @@ import { CategoryInfo, DEFAULT_CATEGORIES, Expense, getCategoryInfo } from "../s
 import { filterByMonth, filterByYear, formatCurrency } from "../src/utils/helpers";
 import { useTheme } from "../src/context/ThemeContext";
 import EmptyState from "../src/components/EmptyState";
+import KeyboardAwareBottomModal from "../src/components/KeyboardAwareBottomModal";
 
 export default function BudgetsScreen() {
   const { colors } = useTheme();
@@ -192,9 +193,11 @@ export default function BudgetsScreen() {
         )}
       </ScrollView>
 
-      <Modal visible={showBudgetForm} transparent animationType="slide">
-        <Pressable style={s.modalOverlay} onPress={() => setShowBudgetForm(false)}>
-          <Pressable style={[s.modalSheet, { backgroundColor: colors.card }]} onPress={() => {}}>
+      <KeyboardAwareBottomModal
+        visible={showBudgetForm}
+        onClose={() => setShowBudgetForm(false)}
+        sheetStyle={[s.modalSheet, { backgroundColor: colors.card }]}
+      >
             <Text style={[s.modalTitle, { color: colors.text }]}>
               {editingBudgetKey ? "Edit Budget Limit" : "Set Budget Limit"}
             </Text>
@@ -255,9 +258,7 @@ export default function BudgetsScreen() {
                 <Text style={s.saveText}>Save</Text>
               </TouchableOpacity>
             </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      </KeyboardAwareBottomModal>
 
       <Modal visible={menuBudget !== null} transparent animationType="fade">
         <Pressable style={s.popoverOverlay} onPress={() => setMenuBudget(null)}>
@@ -285,9 +286,11 @@ export default function BudgetsScreen() {
         </Pressable>
       </Modal>
 
-      <Modal visible={showCatPicker} transparent animationType="slide">
-        <Pressable style={s.modalOverlay} onPress={() => setShowCatPicker(false)}>
-          <Pressable style={[s.pickerSheet, { backgroundColor: colors.card }]} onPress={() => {}}>
+      <KeyboardAwareBottomModal
+        visible={showCatPicker}
+        onClose={() => setShowCatPicker(false)}
+        sheetStyle={[s.pickerSheet, { backgroundColor: colors.card }]}
+      >
             <View style={[s.pickerHeader, { borderBottomColor: colors.cardBorder }]}>
               <Text style={[s.modalTitle, { color: colors.text }]}>Select Category</Text>
               <TouchableOpacity onPress={() => setShowCatPicker(false)}>
@@ -317,9 +320,7 @@ export default function BudgetsScreen() {
                 );
               }}
             />
-          </Pressable>
-        </Pressable>
-      </Modal>
+      </KeyboardAwareBottomModal>
     </SafeAreaView>
   );
 }
@@ -412,11 +413,6 @@ const s = StyleSheet.create({
   amountText: {
     fontSize: 12,
     fontWeight: "700",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
   },
   modalSheet: {
     borderTopLeftRadius: 24,

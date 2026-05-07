@@ -3,12 +3,10 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Modal,
   FlatList,
   TextInput,
   StyleSheet,
   Alert,
-  Pressable,
   ScrollView,
 } from "react-native";
 import {
@@ -23,6 +21,7 @@ import {
   updateCustomCategory,
 } from "../storage/expenseStorage";
 import { useTheme } from "../context/ThemeContext";
+import KeyboardAwareBottomModal from "./KeyboardAwareBottomModal";
 
 const EMOJI_OPTIONS = [
   "🍔", "🚗", "🛍️", "📄", "🎬", "💊", "📚", "📦",
@@ -345,9 +344,11 @@ export default function CategorySelect({
       </TouchableOpacity>
 
       {/* Modal */}
-      <Modal visible={visible} transparent animationType="slide">
-        <Pressable style={s.overlay} onPress={() => { setVisible(false); resetForm(); }}>
-          <Pressable style={[s.sheet, { backgroundColor: colors.card }]} onPress={() => {}}>
+      <KeyboardAwareBottomModal
+        visible={visible}
+        onClose={() => { setVisible(false); resetForm(); }}
+        sheetStyle={[s.sheet, { backgroundColor: colors.card }]}
+      >
             {/* Header */}
             <View style={[s.sheetHeader, { borderBottomColor: colors.cardBorder }]}>
               <Text style={[s.sheetTitle, { color: colors.text }]}>Select Category</Text>
@@ -375,9 +376,7 @@ export default function CategorySelect({
 
             {/* Form (add or edit) */}
             {renderForm()}
-          </Pressable>
-        </Pressable>
-      </Modal>
+      </KeyboardAwareBottomModal>
     </>
   );
 }
@@ -406,11 +405,6 @@ const s = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
     color: "#1A2B23",
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
   },
   sheet: {
     backgroundColor: "#FFFFFF",
