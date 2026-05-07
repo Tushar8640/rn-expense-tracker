@@ -10,11 +10,11 @@ import { processRecurringTransactions } from "../src/storage/recurringService";
 import { initNotifications } from "../src/storage/notificationService";
 
 const TAB_CONFIG = [
-  { name: "index", emoji: "🏠", label: "Home" },
-  { name: "expenses", emoji: "📋", label: "History" },
-  { name: "add", emoji: "➕", label: "Add", isCenter: true },
-  { name: "budgets", emoji: "🎯", label: "Budget" },
-  { name: "reports", emoji: "📊", label: "Reports" },
+  { name: "index", label: "Home" },
+  { name: "expenses", label: "History" },
+  { name: "add", label: "Add", isCenter: true },
+  { name: "budgets", label: "Budget" },
+  { name: "reports", label: "Reports" },
 ];
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
@@ -63,9 +63,6 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
           return (
             <Pressable key={route.key} onPress={onPress} style={s.tabItem}>
-              <Text style={{ fontSize: 20, opacity: isFocused ? 1 : 0.5 }}>
-                {config.emoji}
-              </Text>
               <Text
                 style={[
                   s.label,
@@ -156,8 +153,7 @@ const s = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 4,
-    gap: 1,
+    paddingVertical: 12,
   },
   centerWrapper: {
     alignItems: "center",
@@ -185,7 +181,7 @@ const s = StyleSheet.create({
     }),
   },
   label: {
-    fontSize: 9,
+    fontSize: 11,
     letterSpacing: 0.2,
   },
 });

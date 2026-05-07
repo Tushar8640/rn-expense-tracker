@@ -147,7 +147,7 @@ export default function BudgetsScreen() {
         </View>
 
         {rows.length === 0 ? (
-          <EmptyState emoji="🎯" title="No budgets set" subtitle="Add category limits to track spending progress" />
+          <EmptyState title="No budgets set" subtitle="Add category limits to track spending progress" />
         ) : (
           <View style={{ paddingHorizontal: 20 }}>
             {rows.map((row) => {
@@ -269,7 +269,6 @@ export default function BudgetsScreen() {
                 if (menuBudget) openEditForm(menuBudget);
               }}
             >
-              <Text style={s.popoverIcon}>✏️</Text>
               <Text style={[s.popoverLabel, { color: colors.text }]}>Edit</Text>
             </TouchableOpacity>
             <View style={[s.popoverDivider, { backgroundColor: colors.cardBorder }]} />
@@ -279,7 +278,6 @@ export default function BudgetsScreen() {
                 if (menuBudget) handleDeleteBudget(menuBudget.categoryKey);
               }}
             >
-              <Text style={s.popoverIcon}>🗑️</Text>
               <Text style={[s.popoverLabel, { color: colors.danger }]}>Delete</Text>
             </TouchableOpacity>
           </View>
@@ -315,7 +313,6 @@ export default function BudgetsScreen() {
                       <Text style={{ fontSize: 18 }}>{item.emoji}</Text>
                     </View>
                     <Text style={[s.categoryRowText, { color: colors.text }]}>{item.label}</Text>
-                    {active && <Text style={{ color: colors.primary, fontSize: 18 }}>✓</Text>}
                   </TouchableOpacity>
                 );
               }}

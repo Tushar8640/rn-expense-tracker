@@ -91,7 +91,7 @@ export default function SettingsScreen() {
     setLoading("backup");
     const result = await createManualBackup();
     setLoading(null);
-    Alert.alert(result.success ? "Backup Created ✅" : "Failed", result.message);
+    Alert.alert(result.success ? "Backup Created" : "Failed", result.message);
   };
 
   const handleImport = () => {
@@ -101,7 +101,7 @@ export default function SettingsScreen() {
         setLoading("import");
         const result = await importBackup();
         setLoading(null);
-        if (result.success) { Alert.alert("Restored ✅", result.message); await loadAll(); }
+        if (result.success) { Alert.alert("Restored", result.message); await loadAll(); }
         else if (result.message !== "No file selected.") Alert.alert("Failed", result.message);
       }},
     ]);
@@ -207,7 +207,6 @@ export default function SettingsScreen() {
                     <Text style={{ fontSize: 18 }}>{item.emoji}</Text>
                   </View>
                   <Text style={{ flex: 1, fontSize: 15, fontWeight: isActive ? "700" : "500", color: isActive ? colors.primary : colors.text }}>{item.label}</Text>
-                  {isActive && <Text style={{ color: colors.primary, fontSize: 18 }}>✓</Text>}
                 </TouchableOpacity>
               );
             }}
@@ -231,7 +230,6 @@ export default function SettingsScreen() {
         {/* Dark Mode Toggle */}
         <View style={[st.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, marginHorizontal: 20, marginTop: 16 }]}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <Text style={{ fontSize: 24 }}>{isDark ? "🌙" : "☀️"}</Text>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>Dark Mode</Text>
               <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>{isDark ? "Dark theme active" : "Light theme active"}</Text>
@@ -248,7 +246,6 @@ export default function SettingsScreen() {
         {/* Notification Reminders */}
         <View style={[st.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, marginHorizontal: 20, marginTop: 16 }]}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <Text style={{ fontSize: 24 }}>{notifEnabled ? "🔔" : "🔕"}</Text>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>Daily Reminders</Text>
               <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
@@ -268,7 +265,7 @@ export default function SettingsScreen() {
         {/* Recurring Transactions */}
         <View style={{ paddingHorizontal: 20, marginTop: 28 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>🔄 Recurring</Text>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>Recurring</Text>
             <TouchableOpacity
               style={{ paddingHorizontal: 14, paddingVertical: 6, borderRadius: 12, backgroundColor: colors.primaryLight }}
               onPress={() => setShowRecurringForm(true)}
@@ -298,8 +295,8 @@ export default function SettingsScreen() {
                         thumbColor="#FFF"
                         style={{ transform: [{ scale: 0.8 }] }}
                       />
-                      <TouchableOpacity onPress={() => handleDeleteRecurring(rt)} style={{ width: 28, height: 28, borderRadius: 10, backgroundColor: colors.dangerLight, alignItems: "center", justifyContent: "center" }}>
-                        <Text style={{ color: colors.danger, fontSize: 13, fontWeight: "700" }}>✕</Text>
+                      <TouchableOpacity onPress={() => handleDeleteRecurring(rt)} style={{ paddingHorizontal: 10, height: 28, borderRadius: 10, backgroundColor: colors.dangerLight, alignItems: "center", justifyContent: "center" }}>
+                        <Text style={{ color: colors.danger, fontSize: 12, fontWeight: "800" }}>Delete</Text>
                       </TouchableOpacity>
                     </View>
                     {i < recurring.length - 1 && <View style={{ height: 1, backgroundColor: colors.cardBorder }} />}
@@ -329,7 +326,6 @@ export default function SettingsScreen() {
                       style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 12, borderRadius: 14, backgroundColor: recType === t ? (t === "income" ? colors.primaryLight : colors.dangerLight) : colors.bg, borderWidth: 1.5, borderColor: recType === t ? (t === "income" ? colors.primary : colors.danger) : colors.cardBorder }}
                       onPress={() => setRecType(t)}
                     >
-                      <Text style={{ fontSize: 14 }}>{t === "income" ? "💰" : "💸"}</Text>
                       <Text style={{ fontSize: 14, fontWeight: "600", color: recType === t ? (t === "income" ? colors.primary : colors.danger) : colors.textSecondary }}>{t === "income" ? "Income" : "Expense"}</Text>
                     </TouchableOpacity>
                   ))}
@@ -390,13 +386,13 @@ export default function SettingsScreen() {
 
         {/* Backup Section */}
         <View style={{ paddingHorizontal: 20, marginTop: 28 }}>
-          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>💾 Backup & Restore</Text>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>Backup & Restore</Text>
           <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
             <TouchableOpacity style={{ flex: 1, paddingVertical: 14, borderRadius: 16, backgroundColor: colors.primary, alignItems: "center", minHeight: 48, justifyContent: "center" }} onPress={handleManualBackup} disabled={loading !== null}>
-              {loading === "backup" ? <ActivityIndicator color="#FFF" size="small" /> : <Text style={{ fontSize: 14, fontWeight: "700", color: "#FFF" }}>📤 Export</Text>}
+              {loading === "backup" ? <ActivityIndicator color="#FFF" size="small" /> : <Text style={{ fontSize: 14, fontWeight: "700", color: "#FFF" }}>Export</Text>}
             </TouchableOpacity>
             <TouchableOpacity style={{ flex: 1, paddingVertical: 14, borderRadius: 16, backgroundColor: colors.card, alignItems: "center", borderWidth: 1.5, borderColor: colors.cardBorder, minHeight: 48, justifyContent: "center" }} onPress={handleImport} disabled={loading !== null}>
-              {loading === "import" ? <ActivityIndicator color={colors.primary} size="small" /> : <Text style={{ fontSize: 14, fontWeight: "700", color: colors.primary }}>📥 Import</Text>}
+              {loading === "import" ? <ActivityIndicator color={colors.primary} size="small" /> : <Text style={{ fontSize: 14, fontWeight: "700", color: colors.primary }}>Import</Text>}
             </TouchableOpacity>
           </View>
 
@@ -406,7 +402,6 @@ export default function SettingsScreen() {
               {backups.map((b, i) => (
                 <View key={b.name}>
                   <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 10, gap: 10 }}>
-                    <Text style={{ fontSize: 18 }}>💾</Text>
                     <View style={{ flex: 1 }}>
                       <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>{formatBackupDate(b.date)}</Text>
                       <Text style={{ fontSize: 11, color: colors.textMuted }}>{formatSize(b.size)}</Text>
@@ -415,7 +410,7 @@ export default function SettingsScreen() {
                       style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, backgroundColor: colors.primaryLight }}
                       onPress={() => Alert.alert("Restore?", `Restore from ${formatBackupDate(b.date)}?`, [
                         { text: "Cancel", style: "cancel" },
-                        { text: "Restore", style: "destructive", onPress: async () => { const r = await restoreAutoBackup(b.uri); Alert.alert(r.success ? "Done ✅" : "Failed", r.message); await loadAll(); }},
+                        { text: "Restore", style: "destructive", onPress: async () => { const r = await restoreAutoBackup(b.uri); Alert.alert(r.success ? "Done" : "Failed", r.message); await loadAll(); }},
                       ])}
                     >
                       <Text style={{ fontSize: 11, fontWeight: "700", color: colors.primary }}>Restore</Text>

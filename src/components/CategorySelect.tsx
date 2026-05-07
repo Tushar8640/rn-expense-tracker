@@ -197,25 +197,19 @@ export default function CategorySelect({
               style={[s.editBtn, { backgroundColor: colors.primaryLight }]}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Text style={{ fontSize: 13 }}>✏️</Text>
+              <Text style={[s.actionText, { color: colors.primary }]}>Edit</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => handleDelete(item)}
               style={[s.delBtn, { backgroundColor: colors.dangerLight }]}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Text style={{ color: colors.danger, fontSize: 13, fontWeight: "700" }}>✕</Text>
+              <Text style={[s.actionText, { color: colors.danger }]}>Delete</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {/* Checkmark for selected */}
-        {isActive && !item.isCustom && (
-          <Text style={{ color: colors.primary, fontSize: 18 }}>✓</Text>
-        )}
-        {isActive && item.isCustom && (
-          <Text style={{ color: colors.primary, fontSize: 16, marginLeft: 4 }}>✓</Text>
-        )}
       </TouchableOpacity>
     );
   };
@@ -465,7 +459,7 @@ const s = StyleSheet.create({
     gap: 6,
   },
   editBtn: {
-    width: 30,
+    minWidth: 44,
     height: 30,
     borderRadius: 10,
     backgroundColor: "#E8F0EB",
@@ -473,12 +467,16 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   delBtn: {
-    width: 30,
+    minWidth: 56,
     height: 30,
     borderRadius: 10,
     backgroundColor: "#FDEAEA",
     alignItems: "center",
     justifyContent: "center",
+  },
+  actionText: {
+    fontSize: 11,
+    fontWeight: "800",
   },
   addNewBtn: {
     paddingHorizontal: 24,

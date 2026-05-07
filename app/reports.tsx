@@ -213,7 +213,7 @@ export default function ReportsScreen() {
                     isActive && { color: colors.pillActiveText },
                   ]}
                 >
-                  {type === "monthly" ? "📅 Monthly" : "📆 Yearly"}
+                  {type === "monthly" ? "Monthly" : "Yearly"}
                 </Text>
               </TouchableOpacity>
             );
@@ -266,7 +266,6 @@ export default function ReportsScreen() {
 
         {currentExpenses.length === 0 ? (
           <EmptyState
-            emoji="📊"
             title="No data for this period"
             subtitle={
               reportType === "monthly"
@@ -348,7 +347,7 @@ export default function ReportsScreen() {
                 style={[s.shareBtn, { backgroundColor: colors.primary }]}
                 activeOpacity={0.8}
               >
-                <Text style={s.shareBtnText}>Share Report 📤</Text>
+                <Text style={s.shareBtnText}>Share Report</Text>
               </TouchableOpacity>
               <View style={s.exportRow}>
                 <TouchableOpacity
@@ -454,9 +453,6 @@ export default function ReportsScreen() {
                     >
                       {year}
                     </Text>
-                    {isActive && (
-                      <Text style={{ color: colors.primary, fontSize: 18 }}>✓</Text>
-                    )}
                   </TouchableOpacity>
                 );
               }}

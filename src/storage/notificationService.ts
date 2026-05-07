@@ -18,17 +18,17 @@ const getNotifications = async () => {
 };
 
 const MORNING_MESSAGES = [
-  "🌅 Good morning! Don't forget to log yesterday's expenses.",
-  "☀️ Rise and shine! Track your spending to stay on budget.",
-  "🌤️ New day, new budget! Log any expenses you missed.",
-  "📝 Morning reminder: Keep your expense records up to date!",
+  "Good morning. Don't forget to log yesterday's expenses.",
+  "Rise and shine. Track your spending to stay on budget.",
+  "New day, new budget. Log any expenses you missed.",
+  "Morning reminder: keep your expense records up to date.",
 ];
 
 const NIGHT_MESSAGES = [
-  "🌙 End of day! Did you add all of today's expenses?",
-  "🌃 Before bed, log today's spending. Stay on track!",
-  "✨ Quick check: Any expenses from today to record?",
-  "🌛 Goodnight! Make sure today's expenses are logged.",
+  "End of day. Did you add all of today's expenses?",
+  "Before bed, log today's spending. Stay on track.",
+  "Quick check: any expenses from today to record?",
+  "Goodnight. Make sure today's expenses are logged.",
 ];
 
 const getRandomMessage = (messages: string[]) =>
@@ -94,7 +94,7 @@ export const scheduleDailyReminders = async (): Promise<boolean> => {
     // Morning reminder at 8:00 AM
     await N.scheduleNotificationAsync({
       content: {
-        title: "Expense Tracker 💰",
+        title: "Expense Tracker",
         body: getRandomMessage(MORNING_MESSAGES),
         sound: "default",
         ...(Platform.OS === "android" && { channelId: "reminders" }),
@@ -110,7 +110,7 @@ export const scheduleDailyReminders = async (): Promise<boolean> => {
     // Night reminder at 9:00 PM
     await N.scheduleNotificationAsync({
       content: {
-        title: "Expense Tracker 📊",
+        title: "Expense Tracker",
         body: getRandomMessage(NIGHT_MESSAGES),
         sound: "default",
         ...(Platform.OS === "android" && { channelId: "reminders" }),

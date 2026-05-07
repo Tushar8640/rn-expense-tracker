@@ -121,7 +121,7 @@ export default function HomeScreen() {
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 24, paddingTop: 8 }}>
           <View>
             <Text style={{ fontSize: 28, color: colors.text, fontWeight: "400" }}>Hello,</Text>
-            <Text style={{ fontSize: 28, color: colors.text, fontWeight: "800" }}>Welcome back 👋</Text>
+            <Text style={{ fontSize: 28, color: colors.text, fontWeight: "800" }}>Welcome back</Text>
           </View>
           <TouchableOpacity
             onPress={() => router.push("/settings")}
@@ -259,7 +259,7 @@ export default function HomeScreen() {
         {/* Budget Warnings */}
         {budgetWarnings.length > 0 && (
           <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
-            <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginBottom: 10 }}>⚠️ Budget Alerts</Text>
+            <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginBottom: 10 }}>Budget Alerts</Text>
             {budgetWarnings.map((w) => (
               <View
                 key={w.categoryKey}
@@ -291,26 +291,22 @@ export default function HomeScreen() {
           <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 12 }}>Insights</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
             <View style={[cs.insightCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-              <Text style={cs.insightIcon}>📈</Text>
               <Text style={[cs.insightLabel, { color: colors.textSecondary }]}>Month trend</Text>
               <Text style={[cs.insightValue, { color: monthSpendDelta > 0 ? colors.danger : colors.primary }]}>
                 {prevMonthSpent > 0 ? `${Math.abs(monthSpendDelta).toFixed(0)}% ${monthSpendDelta > 0 ? "up" : "down"}` : "New data"}
               </Text>
             </View>
             <View style={[cs.insightCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-              <Text style={cs.insightIcon}>📅</Text>
               <Text style={[cs.insightLabel, { color: colors.textSecondary }]}>Daily avg</Text>
               <Text style={[cs.insightValue, { color: colors.text }]}>{formatCurrency(Math.round(dailyAverage))}</Text>
             </View>
             <View style={[cs.insightCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-              <Text style={cs.insightIcon}>{topCategoryInfo?.emoji || "📦"}</Text>
               <Text style={[cs.insightLabel, { color: colors.textSecondary }]}>Top category</Text>
               <Text style={[cs.insightValue, { color: colors.text }]} numberOfLines={1}>
                 {topCategoryInfo ? topCategoryInfo.label : "No spend"}
               </Text>
             </View>
             <View style={[cs.insightCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-              <Text style={cs.insightIcon}>🎯</Text>
               <Text style={[cs.insightLabel, { color: colors.textSecondary }]}>Budget risk</Text>
               <Text style={[cs.insightValue, { color: budgetWarnings.length > 0 ? colors.danger : colors.primary }]}>
                 {budgetWarnings.length > 0 ? `${budgetWarnings.length} alerts` : "On track"}
@@ -341,7 +337,7 @@ export default function HomeScreen() {
               />
             ))
           ) : (
-            <EmptyState emoji="💰" title="No transactions yet" subtitle="Tap + to add your first transaction" />
+            <EmptyState title="No transactions yet" subtitle="Tap + to add your first transaction" />
           )}
         </View>
       </ScrollView>

@@ -71,7 +71,7 @@ export default function AddExpenseScreen() {
         createdAt: new Date().toISOString(),
       });
 
-      Alert.alert("Saved! ✅", `${type === "income" ? "Income" : "Expense"} added successfully.`, [
+      Alert.alert("Saved", `${type === "income" ? "Income" : "Expense"} added successfully.`, [
         {
           text: "OK",
           onPress: () => {
@@ -166,7 +166,6 @@ export default function AddExpenseScreen() {
                 ]}
                 onPress={() => setType("expense")}
               >
-                <Text style={{ fontSize: 16 }}>💸</Text>
                 <Text
                   style={[
                     s.toggleText,
@@ -186,7 +185,6 @@ export default function AddExpenseScreen() {
                 ]}
                 onPress={() => setType("income")}
               >
-                <Text style={{ fontSize: 16 }}>💰</Text>
                 <Text
                   style={[
                     s.toggleText,
@@ -230,7 +228,6 @@ export default function AddExpenseScreen() {
               onPress={() => setShowDatePicker(true)}
               activeOpacity={0.7}
             >
-              <Text style={{ fontSize: 16 }}>📅</Text>
               <Text style={[s.dateText, { color: colors.text }]}>{formatDate(date.toISOString())}</Text>
               <Text style={{ color: colors.textMuted, fontSize: 18 }}>▾</Text>
             </TouchableOpacity>
@@ -291,7 +288,6 @@ export default function AddExpenseScreen() {
               onPress={pickReceipt}
               activeOpacity={0.7}
             >
-              <Text style={{ fontSize: 16 }}>🧾</Text>
               <Text style={[s.dateText, { color: colors.text }]} numberOfLines={1}>
                 {receiptName || "Attach receipt or bill"}
               </Text>

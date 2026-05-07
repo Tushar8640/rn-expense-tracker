@@ -90,7 +90,7 @@ export default function EditExpenseScreen() {
         createdAt: new Date().toISOString(),
       });
 
-      Alert.alert("Updated! ✅", "Transaction updated successfully.", [
+      Alert.alert("Updated", "Transaction updated successfully.", [
         { text: "OK", onPress: () => router.back() },
       ]);
     } catch {
@@ -178,7 +178,6 @@ export default function EditExpenseScreen() {
                 ]}
                 onPress={() => setType("expense")}
               >
-                <Text style={{ fontSize: 16 }}>💸</Text>
                 <Text
                   style={[
                     s.toggleText,
@@ -198,7 +197,6 @@ export default function EditExpenseScreen() {
                 ]}
                 onPress={() => setType("income")}
               >
-                <Text style={{ fontSize: 16 }}>💰</Text>
                 <Text
                   style={[
                     s.toggleText,
@@ -242,7 +240,6 @@ export default function EditExpenseScreen() {
               onPress={() => setShowDatePicker(true)}
               activeOpacity={0.7}
             >
-              <Text style={{ fontSize: 16 }}>📅</Text>
               <Text style={[s.dateText, { color: colors.text }]}>{formatDate(date.toISOString())}</Text>
               <Text style={{ color: colors.textMuted, fontSize: 18 }}>▾</Text>
             </TouchableOpacity>
@@ -303,7 +300,6 @@ export default function EditExpenseScreen() {
               onPress={pickReceipt}
               activeOpacity={0.7}
             >
-              <Text style={{ fontSize: 16 }}>🧾</Text>
               <Text style={[s.dateText, { color: colors.text }]} numberOfLines={1}>
                 {receiptName || "Attach receipt or bill"}
               </Text>

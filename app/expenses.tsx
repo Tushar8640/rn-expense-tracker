@@ -247,7 +247,6 @@ export default function ExpensesScreen() {
 
       <View style={s.advancedWrap}>
         <View style={[s.searchBox, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          <Text style={{ fontSize: 15 }}>🔎</Text>
           <TextInput
             style={[s.searchInput, { color: colors.text }]}
             placeholder="Search note, category, amount"
@@ -389,7 +388,6 @@ export default function ExpensesScreen() {
           ))
         ) : (
           <EmptyState
-            emoji="🔍"
             title="No expenses found"
             subtitle={
               filter === "all"
@@ -470,7 +468,6 @@ export default function ExpensesScreen() {
                   >
                     <Text style={{ fontSize: 18 }}>{item.emoji}</Text>
                     <Text style={[s.categoryRowText, { color: colors.text }]}>{item.label}</Text>
-                    {isActive && <Text style={{ color: colors.primary, fontSize: 18 }}>✓</Text>}
                   </TouchableOpacity>
                 );
               }}
@@ -537,9 +534,6 @@ export default function ExpensesScreen() {
                     >
                       {year}
                     </Text>
-                    {isActive && (
-                      <Text style={{ color: colors.primary, fontSize: 18 }}>✓</Text>
-                    )}
                   </TouchableOpacity>
                 );
               }}

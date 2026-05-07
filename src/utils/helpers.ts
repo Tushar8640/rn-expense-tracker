@@ -149,11 +149,11 @@ export const generateTextReport = (
   const spent = getExpenseTotal(expenses);
   const byCategory = groupByCategory(expenses, customCategories);
 
-  let report = `📊 ${title}\n`;
+  let report = `${title}\n`;
   report += `${"─".repeat(30)}\n`;
-  report += `💰 Income: ${formatCurrency(income)}\n`;
-  report += `💸 Spent: ${formatCurrency(spent)}\n`;
-  report += `📊 Net: ${formatCurrency(income - spent)}\n`;
+  report += `Income: ${formatCurrency(income)}\n`;
+  report += `Spent: ${formatCurrency(spent)}\n`;
+  report += `Net: ${formatCurrency(income - spent)}\n`;
   report += `Transactions: ${expenses.length}\n\n`;
   report += `Category Breakdown:\n`;
 
@@ -161,7 +161,7 @@ export const generateTextReport = (
     const cat = getCategoryInfo(category, customCategories);
     const total = getTotalAmount(expenses);
     const pct = total > 0 ? ((catTotal / total) * 100).toFixed(1) : "0";
-    report += `  ${cat.emoji} ${cat.label}: ${formatCurrency(catTotal)} (${pct}%) - ${count} items\n`;
+    report += `  ${cat.label}: ${formatCurrency(catTotal)} (${pct}%) - ${count} items\n`;
   });
 
   report += `\n${"─".repeat(30)}\n`;

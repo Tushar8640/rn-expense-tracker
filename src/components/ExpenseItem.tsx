@@ -125,7 +125,6 @@ export default function ExpenseItem({
                   onEdit();
                 }}
               >
-                <Text style={styles.menuIcon}>✏️</Text>
                 <Text style={[styles.menuLabel, { color: colors.text }]}>Edit</Text>
               </TouchableOpacity>
             )}
@@ -138,7 +137,6 @@ export default function ExpenseItem({
                   onDelete();
                 }}
               >
-                <Text style={styles.menuIcon}>🗑️</Text>
                 <Text style={[styles.menuLabel, { color: "#E85D5D" }]}>
                   Delete
                 </Text>
@@ -232,9 +230,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 10,
-  },
-  menuIcon: {
-    fontSize: 16,
   },
   menuLabel: {
     fontSize: 15,
