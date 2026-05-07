@@ -13,7 +13,7 @@ import {
   Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { format, getDaysInMonth } from "date-fns";
 import { getExpenses, getCustomCategories } from "../src/storage/expenseStorage";
 import { Expense, CategoryInfo } from "../src/types/expense";
@@ -44,6 +44,7 @@ const MONTHS = [
 
 export default function ReportsScreen() {
   const { colors } = useTheme();
+  const router = useRouter();
   const now = new Date();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [customCats, setCustomCats] = useState<CategoryInfo[]>([]);
@@ -460,6 +461,14 @@ export default function ReportsScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      <TouchableOpacity
+        onPress={() => router.push("/add")}
+        style={[s.fab, { backgroundColor: colors.primary }]}
+        activeOpacity={0.85}
+      >
+        <Text style={s.fabText}>+</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -634,5 +643,26 @@ const s = StyleSheet.create({
   yearRowText: {
     fontSize: 17,
     fontWeight: "600",
+  },
+  fab: {
+    position: "absolute",
+    right: 20,
+    bottom: 96,
+    width: 56,
+    height: 56,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#1A2B23",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  fabText: {
+    color: "#FFFFFF",
+    fontSize: 30,
+    fontWeight: "600",
+    lineHeight: 32,
   },
 });

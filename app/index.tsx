@@ -123,21 +123,6 @@ export default function HomeScreen() {
             <Text style={{ fontSize: 28, color: colors.text, fontWeight: "400" }}>Hello,</Text>
             <Text style={{ fontSize: 28, color: colors.text, fontWeight: "800" }}>Welcome back</Text>
           </View>
-          <TouchableOpacity
-            onPress={() => router.push("/settings")}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 16,
-              backgroundColor: colors.card,
-              alignItems: "center",
-              justifyContent: "center",
-              borderWidth: 1,
-              borderColor: colors.cardBorder,
-            }}
-          >
-            <Text style={{ fontSize: 18 }}>⚙️</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Filter Pills */}
@@ -341,6 +326,13 @@ export default function HomeScreen() {
           )}
         </View>
       </ScrollView>
+      <TouchableOpacity
+        onPress={() => router.push("/add")}
+        style={[cs.fab, { backgroundColor: colors.primary }]}
+        activeOpacity={0.85}
+      >
+        <Text style={cs.fabText}>+</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -411,5 +403,26 @@ const cs = StyleSheet.create({
     fontSize: 16,
     fontWeight: "900",
     marginTop: 4,
+  },
+  fab: {
+    position: "absolute",
+    right: 20,
+    bottom: 96,
+    width: 56,
+    height: 56,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#1A2B23",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  fabText: {
+    color: "#FFFFFF",
+    fontSize: 30,
+    fontWeight: "600",
+    lineHeight: 32,
   },
 });

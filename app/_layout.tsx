@@ -4,18 +4,76 @@ import { View, Text, Platform, StyleSheet, Pressable } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import Svg, { Circle, Line, Path, Rect } from "react-native-svg";
 import { ThemeProvider, useTheme } from "../src/context/ThemeContext";
 import { runAutoBackupIfNeeded } from "../src/storage/backupService";
 import { processRecurringTransactions } from "../src/storage/recurringService";
 import { initNotifications } from "../src/storage/notificationService";
 
 const TAB_CONFIG = [
-  { name: "index", label: "Home" },
-  { name: "expenses", label: "History" },
-  { name: "add", label: "Add", isCenter: true },
-  { name: "budgets", label: "Budget" },
-  { name: "reports", label: "Reports" },
+  { name: "index", label: "Home", icon: "home" },
+  { name: "expenses", label: "History", icon: "history" },
+  { name: "budgets", label: "Budget", icon: "target" },
+  { name: "reports", label: "Reports", icon: "chart" },
+  { name: "settings", label: "Settings", icon: "settings" },
 ];
+
+function TabIcon({ name, color }: { name: string; color: string }) {
+  const strokeProps = {
+    stroke: color,
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    fill: "none",
+  };
+
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24">
+      {name === "home" && (
+        <>
+          <Path d="M4 10.5 12 4l8 6.5" {...strokeProps} />
+          <Path d="M6.5 10v9h11v-9" {...strokeProps} />
+          <Path d="M10 19v-5h4v5" {...strokeProps} />
+        </>
+      )}
+      {name === "history" && (
+        <>
+          <Path d="M4 12a8 8 0 1 0 2.3-5.7" {...strokeProps} />
+          <Path d="M4 5.5v4h4" {...strokeProps} />
+          <Path d="M12 8v5l3 2" {...strokeProps} />
+        </>
+      )}
+      {name === "target" && (
+        <>
+          <Circle cx={12} cy={12} r={8} {...strokeProps} />
+          <Circle cx={12} cy={12} r={4} {...strokeProps} />
+          <Circle cx={12} cy={12} r={1} fill={color} />
+        </>
+      )}
+      {name === "chart" && (
+        <>
+          <Line x1={5} y1={19} x2={19} y2={19} {...strokeProps} />
+          <Rect x={6} y={11} width={3} height={6} rx={1} {...strokeProps} />
+          <Rect x={11} y={7} width={3} height={10} rx={1} {...strokeProps} />
+          <Rect x={16} y={4} width={3} height={13} rx={1} {...strokeProps} />
+        </>
+      )}
+      {name === "settings" && (
+        <>
+          <Circle cx={12} cy={12} r={3} {...strokeProps} />
+          <Path d="M12 3v3" {...strokeProps} />
+          <Path d="M12 18v3" {...strokeProps} />
+          <Path d="M3 12h3" {...strokeProps} />
+          <Path d="M18 12h3" {...strokeProps} />
+          <Path d="m5.6 5.6 2.1 2.1" {...strokeProps} />
+          <Path d="m16.3 16.3 2.1 2.1" {...strokeProps} />
+          <Path d="m18.4 5.6-2.1 2.1" {...strokeProps} />
+          <Path d="m7.7 16.3-2.1 2.1" {...strokeProps} />
+        </>
+      )}
+    </Svg>
+  );
+}
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
@@ -38,8 +96,6 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           if (!config) return null;
 
           const isFocused = state.index === index;
-          const isCenter = config.isCenter === true;
-
           const onPress = () => {
             const event = navigation.emit({
               type: "tabPress",
@@ -51,18 +107,12 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             }
           };
 
-          if (isCenter) {
-            return (
-              <Pressable key={route.key} onPress={onPress} style={s.centerWrapper}>
-                <View style={[s.centerBtn, isFocused && { backgroundColor: colors.primaryDark, transform: [{ scale: 1.06 }] }]}>
-                  <Text style={{ fontSize: 24, color: "#FFFFFF" }}>+</Text>
-                </View>
-              </Pressable>
-            );
-          }
-
           return (
             <Pressable key={route.key} onPress={onPress} style={s.tabItem}>
+              <TabIcon
+                name={config.icon}
+                color={isFocused ? colors.primary : colors.textMuted}
+              />
               <Text
                 style={[
                   s.label,
@@ -100,10 +150,10 @@ function AppContent() {
       >
         <Tabs.Screen name="index" />
         <Tabs.Screen name="expenses" />
-        <Tabs.Screen name="add" />
         <Tabs.Screen name="budgets" />
         <Tabs.Screen name="reports" />
-        <Tabs.Screen name="settings" options={{ href: null }} />
+        <Tabs.Screen name="settings" />
+        <Tabs.Screen name="add" options={{ href: null }} />
         <Tabs.Screen name="edit" options={{ href: null }} />
       </Tabs>
     </>
@@ -154,31 +204,6 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 12,
-  },
-  centerWrapper: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: -30,
-  },
-  centerBtn: {
-    width: 54,
-    height: 54,
-    borderRadius: 20,
-    backgroundColor: "#4B7A5B",
-    alignItems: "center",
-    justifyContent: "center",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#4B7A5B",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.35,
-        shadowRadius: 16,
-      },
-      android: {
-        elevation: 14,
-        shadowColor: "#4B7A5B",
-      },
-    }),
   },
   label: {
     fontSize: 11,

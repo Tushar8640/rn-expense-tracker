@@ -541,6 +541,14 @@ export default function ExpensesScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      <TouchableOpacity
+        onPress={() => router.push("/add")}
+        style={[s.fab, { backgroundColor: colors.primary }]}
+        activeOpacity={0.85}
+      >
+        <Text style={s.fabText}>+</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -739,5 +747,26 @@ const s = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontWeight: "700",
+  },
+  fab: {
+    position: "absolute",
+    right: 20,
+    bottom: 96,
+    width: 56,
+    height: 56,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#1A2B23",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  fabText: {
+    color: "#FFFFFF",
+    fontSize: 30,
+    fontWeight: "600",
+    lineHeight: 32,
   },
 });

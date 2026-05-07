@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
+import Constants from "expo-constants";
 import { format, parseISO } from "date-fns";
 import { useTheme } from "../src/context/ThemeContext";
 import {
@@ -46,6 +47,7 @@ import {
 
 export default function SettingsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
+  const appVersion = Constants.expoConfig?.version || "1.1.0";
   const [backups, setBackups] = useState<BackupInfo[]>([]);
   const [recurring, setRecurring] = useState<RecurringTransaction[]>([]);
   const [customCats, setCustomCats] = useState<CategoryInfo[]>([]);
@@ -423,6 +425,30 @@ export default function SettingsScreen() {
           )}
         </View>
 
+        {/* App Info */}
+        <View style={{ paddingHorizontal: 20, marginTop: 28 }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.text }}>App Info</Text>
+          <View style={[st.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, marginTop: 12 }]}>
+            <View style={st.infoRow}>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: colors.textSecondary }}>Version</Text>
+              <Text style={{ fontSize: 14, fontWeight: "800", color: colors.text }}>v{appVersion}</Text>
+            </View>
+            <View style={[st.infoDivider, { backgroundColor: colors.cardBorder }]} />
+            <View style={st.infoRow}>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: colors.textSecondary }}>Developer</Text>
+              <Text style={{ fontSize: 14, fontWeight: "800", color: colors.text }}>Tusar Imran</Text>
+            </View>
+            <View style={[st.infoDivider, { backgroundColor: colors.cardBorder }]} />
+            <View style={st.infoRow}>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: colors.textSecondary }}>Email</Text>
+              <Text style={{ fontSize: 14, fontWeight: "800", color: colors.text }}>tusar.imran.dev@gmail.com</Text>
+            </View>
+            <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 10 }}>
+              Built for personal expense tracking, budgets, recurring entries, reports, and backups.
+            </Text>
+          </View>
+        </View>
+
         <View style={{ height: 20 }} />
       </ScrollView>
 
@@ -436,5 +462,15 @@ const st = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
+  },
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+  },
+  infoDivider: {
+    height: 1,
+    marginVertical: 12,
   },
 });
