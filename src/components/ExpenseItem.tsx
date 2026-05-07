@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { CategoryInfo, Expense, getCategoryInfo } from "../types/expense";
 import { formatCurrency, formatDateShort } from "../utils/helpers";
+import { useTheme } from "../context/ThemeContext";
 
 interface ExpenseItemProps {
   expense: Expense;
@@ -24,6 +25,7 @@ export default function ExpenseItem({
   onEdit,
   onDelete,
 }: ExpenseItemProps) {
+  const { colors, isDark } = useTheme();
   const category = getCategoryInfo(expense.category, customCategories);
   const isIncome = expense.type === "income";
   const [menuVisible, setMenuVisible] = useState(false);
@@ -47,8 +49,8 @@ export default function ExpenseItem({
         style={[
           styles.container,
           {
-            backgroundColor: isIncome ? "#E8F0EB" : "#FDF2F2",
-            borderColor: isIncome ? "#C8DDD0" : "#F5DADA",
+            backgroundColor: isDark ? colors.card : isIncome ? "#E8F0EB" : "#FDF2F2",
+            borderColor: isDark ? colors.cardBorder : isIncome ? "#C8DDD0" : "#F5DADA",
           },
         ]}
       >
@@ -73,9 +75,9 @@ export default function ExpenseItem({
 
         {/* Details */}
         <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={styles.categoryLabel}>{category.label}</Text>
+          <Text style={[styles.categoryLabel, { color: colors.text }]}>{category.label}</Text>
           {expense.note ? (
-            <Text style={styles.note} numberOfLines={1}>
+            <Text style={[styles.note, { color: colors.textSecondary }]} numberOfLines={1}>
               {expense.note}
             </Text>
           ) : null}
@@ -88,11 +90,11 @@ export default function ExpenseItem({
 
         {/* Amount & Date */}
         <View style={{ alignItems: "flex-end", marginRight: 6 }}>
-          <Text style={[styles.amount, isIncome && { color: "#4B7A5B" }]}>
+          <Text style={[styles.amount, { color: colors.text }, isIncome && { color: colors.primary }]}>
             {isIncome ? "+" : "-"}
             {formatCurrency(expense.amount)}
           </Text>
-          <Text style={styles.date}>{formatDateShort(expense.date)}</Text>
+          <Text style={[styles.date, { color: colors.textMuted }]}>{formatDateShort(expense.date)}</Text>
         </View>
 
         {/* Three dot menu */}
@@ -103,7 +105,7 @@ export default function ExpenseItem({
             style={styles.dotBtn}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text style={styles.dotText}>⋮</Text>
+            <Text style={[styles.dotText, { color: colors.textMuted }]}>⋮</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -114,7 +116,7 @@ export default function ExpenseItem({
           style={styles.menuOverlay}
           onPress={() => setMenuVisible(false)}
         >
-          <View style={[styles.menuCard, { top: menuPos.top, right: menuPos.right }]}>
+          <View style={[styles.menuCard, { top: menuPos.top, right: menuPos.right, backgroundColor: colors.card, borderColor: colors.cardBorder, shadowColor: colors.text }]}>
             {onEdit && (
               <TouchableOpacity
                 style={styles.menuItem}
@@ -124,10 +126,10 @@ export default function ExpenseItem({
                 }}
               >
                 <Text style={styles.menuIcon}>✏️</Text>
-                <Text style={styles.menuLabel}>Edit</Text>
+                <Text style={[styles.menuLabel, { color: colors.text }]}>Edit</Text>
               </TouchableOpacity>
             )}
-            {onEdit && onDelete && <View style={styles.menuDivider} />}
+            {onEdit && onDelete && <View style={[styles.menuDivider, { backgroundColor: colors.cardBorder }]} />}
             {onDelete && (
               <TouchableOpacity
                 style={styles.menuItem}

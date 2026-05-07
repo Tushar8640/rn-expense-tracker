@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { useTheme } from "../context/ThemeContext";
 
 interface SummaryCardProps {
   title: string;
@@ -16,8 +17,9 @@ export default function SummaryCard({
   color = "#4B7A5B",
   indicator,
 }: SummaryCardProps) {
+  const { colors } = useTheme();
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
         {indicator && (
           <View
@@ -29,10 +31,10 @@ export default function SummaryCard({
             }}
           />
         )}
-        <Text style={styles.title}>{title}</Text>
+        <Text style={[styles.title, { color: colors.textSecondary }]}>{title}</Text>
       </View>
       <Text style={[styles.amount, { color }]}>{amount}</Text>
-      {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+      {subtitle && <Text style={[styles.subtitle, { color: colors.textMuted }]}>{subtitle}</Text>}
     </View>
   );
 }

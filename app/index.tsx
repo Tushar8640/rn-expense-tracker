@@ -261,7 +261,17 @@ export default function HomeScreen() {
           <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
             <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text, marginBottom: 10 }}>⚠️ Budget Alerts</Text>
             {budgetWarnings.map((w) => (
-              <View key={w.categoryKey} style={{ backgroundColor: w.pct >= 100 ? colors.dangerLight : "#FFF8E1", borderRadius: 16, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: w.pct >= 100 ? colors.danger + "30" : "#F5E6B8" }}>
+              <View
+                key={w.categoryKey}
+                style={{
+                  backgroundColor: w.pct >= 100 ? colors.dangerLight : colors.card,
+                  borderRadius: 16,
+                  padding: 14,
+                  marginBottom: 8,
+                  borderWidth: 1,
+                  borderColor: w.pct >= 100 ? colors.danger + "30" : colors.cardBorder,
+                }}
+              >
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                   <Text style={{ fontSize: 18 }}>{w.cat.emoji}</Text>
                   <Text style={{ flex: 1, fontSize: 14, fontWeight: "600", color: colors.text }}>{w.cat.label}</Text>

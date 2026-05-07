@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import Svg, { Circle } from "react-native-svg";
+import { useTheme } from "../context/ThemeContext";
 
 interface DonutChartProps {
   data: { label: string; value: number; color: string }[];
@@ -17,6 +18,7 @@ export default function DonutChart({
   centerLabel,
   centerValue,
 }: DonutChartProps) {
+  const { colors } = useTheme();
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const center = size / 2;
@@ -32,7 +34,7 @@ export default function DonutChart({
           cx={center}
           cy={center}
           r={radius}
-          stroke="#E8F0EB"
+          stroke={colors.cardBorder}
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -74,7 +76,7 @@ export default function DonutChart({
           }}
         >
           {centerLabel && (
-            <Text style={{ fontSize: 11, color: "#7A8F84", fontWeight: "500" }}>
+            <Text style={{ fontSize: 11, color: colors.textSecondary, fontWeight: "500" }}>
               {centerLabel}
             </Text>
           )}
@@ -87,7 +89,7 @@ export default function DonutChart({
                 width: size - strokeWidth * 3,
                 textAlign: "center",
                 fontSize: 18,
-                color: "#1A2B23",
+                color: colors.text,
                 fontWeight: "800",
               }}
             >

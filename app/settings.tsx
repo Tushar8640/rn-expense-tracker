@@ -240,7 +240,7 @@ export default function SettingsScreen() {
             <Switch
               value={isDark}
               onValueChange={toggleTheme}
-              trackColor={{ false: "#E8F0EB", true: "#4B7A5B" }}
+              trackColor={{ false: colors.cardBorder, true: colors.primary }}
               thumbColor="#FFFFFF"
             />
           </View>
@@ -260,7 +260,7 @@ export default function SettingsScreen() {
               value={notifEnabled}
               onValueChange={handleToggleNotifications}
               disabled={loading === "notifications"}
-              trackColor={{ false: "#E8F0EB", true: "#4B7A5B" }}
+              trackColor={{ false: colors.cardBorder, true: colors.primary }}
               thumbColor="#FFFFFF"
             />
           </View>

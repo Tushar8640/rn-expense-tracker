@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { CategoryInfo, getCategoryInfo } from "../types/expense";
 import { formatCurrency } from "../utils/helpers";
+import { useTheme } from "../context/ThemeContext";
 
 interface CategoryBreakdownProps {
   data: { category: string; total: number; count: number }[];
@@ -14,8 +15,9 @@ export default function CategoryBreakdown({
   grandTotal,
   customCategories = [],
 }: CategoryBreakdownProps) {
+  const { colors } = useTheme();
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
       {data.map((item, index) => {
         const cat = getCategoryInfo(item.category, customCategories);
         const pct = grandTotal > 0 ? (item.total / grandTotal) * 100 : 0;
@@ -34,12 +36,12 @@ export default function CategoryBreakdown({
 
               <View style={{ flex: 1, marginHorizontal: 12 }}>
                 <View style={styles.labelRow}>
-                  <Text style={styles.catLabel}>{cat.label}</Text>
-                  <Text style={styles.catAmount}>
+                  <Text style={[styles.catLabel, { color: colors.text }]}>{cat.label}</Text>
+                  <Text style={[styles.catAmount, { color: colors.text }]}>
                     {formatCurrency(item.total)}
                   </Text>
                 </View>
-                <View style={styles.progressBg}>
+                <View style={[styles.progressBg, { backgroundColor: colors.cardBorder }]}>
                   <View
                     style={[
                       styles.progressFill,
@@ -52,15 +54,15 @@ export default function CategoryBreakdown({
                 </View>
               </View>
 
-              <Text style={styles.pct}>{pct.toFixed(0)}%</Text>
+              <Text style={[styles.pct, { color: colors.textSecondary }]}>{pct.toFixed(0)}%</Text>
             </View>
-            {index < data.length - 1 && <View style={styles.divider} />}
+            {index < data.length - 1 && <View style={[styles.divider, { backgroundColor: colors.cardBorder }]} />}
           </View>
         );
       })}
 
       {data.length === 0 && (
-        <Text style={styles.empty}>No data available</Text>
+        <Text style={[styles.empty, { color: colors.textSecondary }]}>No data available</Text>
       )}
     </View>
   );

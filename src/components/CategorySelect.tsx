@@ -22,6 +22,7 @@ import {
   deleteCustomCategory,
   updateCustomCategory,
 } from "../storage/expenseStorage";
+import { useTheme } from "../context/ThemeContext";
 
 const EMOJI_OPTIONS = [
   "🍔", "🚗", "🛍️", "📄", "🎬", "💊", "📚", "📦",
@@ -46,6 +47,7 @@ export default function CategorySelect({
   selected,
   onSelect,
 }: CategorySelectProps) {
+  const { colors } = useTheme();
   const [visible, setVisible] = useState(false);
   const [customCats, setCustomCats] = useState<CategoryInfo[]>([]);
 
@@ -168,8 +170,9 @@ export default function CategorySelect({
       <TouchableOpacity
         style={[
           s.optionRow,
-          isActive && s.optionRowActive,
-          isEditing && s.optionRowEditing,
+          { borderBottomColor: colors.cardBorder },
+          isActive && { backgroundColor: `${colors.primaryLight}70` },
+          isEditing && { backgroundColor: colors.primaryLight },
         ]}
         onPress={() => handleSelect(item.key)}
         activeOpacity={0.7}
@@ -180,7 +183,8 @@ export default function CategorySelect({
         <Text
           style={[
             s.optionLabel,
-            isActive && { color: "#4B7A5B", fontWeight: "700" },
+            { color: colors.text },
+            isActive && { color: colors.primary, fontWeight: "700" },
           ]}
         >
           {item.label}
@@ -191,27 +195,27 @@ export default function CategorySelect({
           <View style={s.actionBtns}>
             <TouchableOpacity
               onPress={() => openEditForm(item)}
-              style={s.editBtn}
+              style={[s.editBtn, { backgroundColor: colors.primaryLight }]}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text style={{ fontSize: 13 }}>✏️</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => handleDelete(item)}
-              style={s.delBtn}
+              style={[s.delBtn, { backgroundColor: colors.dangerLight }]}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Text style={{ color: "#E85D5D", fontSize: 13, fontWeight: "700" }}>✕</Text>
+              <Text style={{ color: colors.danger, fontSize: 13, fontWeight: "700" }}>✕</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {/* Checkmark for selected */}
         {isActive && !item.isCustom && (
-          <Text style={{ color: "#4B7A5B", fontSize: 18 }}>✓</Text>
+          <Text style={{ color: colors.primary, fontSize: 18 }}>✓</Text>
         )}
         {isActive && item.isCustom && (
-          <Text style={{ color: "#4B7A5B", fontSize: 16, marginLeft: 4 }}>✓</Text>
+          <Text style={{ color: colors.primary, fontSize: 16, marginLeft: 4 }}>✓</Text>
         )}
       </TouchableOpacity>
     );
@@ -226,34 +230,34 @@ export default function CategorySelect({
     const onSubmit = isEdit ? handleSaveEdit : handleAdd;
 
     return (
-      <View style={s.formContainer}>
+      <View style={[s.formContainer, { borderTopColor: colors.cardBorder }]}>
         <View style={s.formHeader}>
-          <Text style={s.formTitle}>{title}</Text>
+          <Text style={[s.formTitle, { color: colors.text }]}>{title}</Text>
           {isEdit && (
             <TouchableOpacity
               onPress={() => {
                 const cat = customCats.find((c) => c.key === editingKey);
                 if (cat) handleDelete(cat);
               }}
-              style={s.formDeleteBtn}
+              style={[s.formDeleteBtn, { backgroundColor: colors.dangerLight }]}
             >
-              <Text style={s.formDeleteText}>Delete</Text>
+              <Text style={[s.formDeleteText, { color: colors.danger }]}>Delete</Text>
             </TouchableOpacity>
           )}
         </View>
 
         {/* Name */}
         <TextInput
-          style={s.formInput}
+          style={[s.formInput, { backgroundColor: colors.bg, borderColor: colors.cardBorder, color: colors.text }]}
           placeholder="Category name"
-          placeholderTextColor="#A8C5B5"
+          placeholderTextColor={colors.textMuted}
           value={formLabel}
           onChangeText={setFormLabel}
           autoFocus={formMode === "add"}
         />
 
         {/* Emoji picker */}
-        <Text style={s.formFieldLabel}>Emoji</Text>
+        <Text style={[s.formFieldLabel, { color: colors.textSecondary }]}>Emoji</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -264,7 +268,11 @@ export default function CategorySelect({
             <TouchableOpacity
               key={e}
               onPress={() => setFormEmoji(e)}
-              style={[s.emojiBtn, formEmoji === e && s.emojiBtnActive]}
+              style={[
+                s.emojiBtn,
+                { backgroundColor: colors.bg },
+                formEmoji === e && { backgroundColor: colors.primaryLight, borderColor: colors.primary },
+              ]}
             >
               <Text style={{ fontSize: 18 }}>{e}</Text>
             </TouchableOpacity>
@@ -272,7 +280,7 @@ export default function CategorySelect({
         </ScrollView>
 
         {/* Color picker */}
-        <Text style={s.formFieldLabel}>Color</Text>
+        <Text style={[s.formFieldLabel, { color: colors.textSecondary }]}>Color</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -286,28 +294,28 @@ export default function CategorySelect({
               style={[
                 s.colorBtn,
                 { backgroundColor: c },
-                formColor === c && s.colorBtnActive,
+                formColor === c && { borderWidth: 3, borderColor: colors.text },
               ]}
             />
           ))}
         </ScrollView>
 
         {/* Preview */}
-        <View style={s.previewRow}>
+        <View style={[s.previewRow, { backgroundColor: colors.bg }]}>
           <View style={[s.previewIcon, { backgroundColor: formColor + "15" }]}>
             <Text style={{ fontSize: 20 }}>{formEmoji}</Text>
           </View>
-          <Text style={s.previewLabel}>
+          <Text style={[s.previewLabel, { color: colors.text }]}>
             {formLabel.trim() || "Preview"}
           </Text>
         </View>
 
         {/* Actions */}
         <View style={s.formActions}>
-          <TouchableOpacity style={s.cancelBtn} onPress={resetForm}>
-            <Text style={s.cancelBtnText}>Cancel</Text>
+          <TouchableOpacity style={[s.cancelBtn, { backgroundColor: colors.bg }]} onPress={resetForm}>
+            <Text style={[s.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.saveBtn} onPress={onSubmit}>
+          <TouchableOpacity style={[s.saveBtn, { backgroundColor: colors.primary }]} onPress={onSubmit}>
             <Text style={s.saveBtnText}>{btnText}</Text>
           </TouchableOpacity>
         </View>
@@ -319,7 +327,7 @@ export default function CategorySelect({
     <>
       {/* Trigger */}
       <TouchableOpacity
-        style={s.trigger}
+        style={[s.trigger, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
         onPress={() => {
           loadCustom();
           resetForm();
@@ -332,19 +340,19 @@ export default function CategorySelect({
         >
           <Text style={{ fontSize: 18 }}>{selectedCat.emoji}</Text>
         </View>
-        <Text style={s.triggerLabel}>{selectedCat.label}</Text>
-        <Text style={{ color: "#A8C5B5", fontSize: 18 }}>▾</Text>
+        <Text style={[s.triggerLabel, { color: colors.text }]}>{selectedCat.label}</Text>
+        <Text style={{ color: colors.textMuted, fontSize: 18 }}>▾</Text>
       </TouchableOpacity>
 
       {/* Modal */}
       <Modal visible={visible} transparent animationType="slide">
         <Pressable style={s.overlay} onPress={() => { setVisible(false); resetForm(); }}>
-          <Pressable style={s.sheet} onPress={() => {}}>
+          <Pressable style={[s.sheet, { backgroundColor: colors.card }]} onPress={() => {}}>
             {/* Header */}
-            <View style={s.sheetHeader}>
-              <Text style={s.sheetTitle}>Select Category</Text>
+            <View style={[s.sheetHeader, { borderBottomColor: colors.cardBorder }]}>
+              <Text style={[s.sheetTitle, { color: colors.text }]}>Select Category</Text>
               <TouchableOpacity onPress={() => { setVisible(false); resetForm(); }}>
-                <Text style={s.sheetClose}>Done</Text>
+                <Text style={[s.sheetClose, { color: colors.primary }]}>Done</Text>
               </TouchableOpacity>
             </View>
 
@@ -360,8 +368,8 @@ export default function CategorySelect({
 
             {/* Add button (only when form is not open) */}
             {formMode === "none" && (
-              <TouchableOpacity style={s.addNewBtn} onPress={openAddForm}>
-                <Text style={s.addNewText}>+ Add New Category</Text>
+              <TouchableOpacity style={[s.addNewBtn, { borderTopColor: colors.cardBorder }]} onPress={openAddForm}>
+                <Text style={[s.addNewText, { color: colors.primary }]}>+ Add New Category</Text>
               </TouchableOpacity>
             )}
 

@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { useTheme } from "../context/ThemeContext";
 
 interface BarChartProps {
   data: { label: string; value: number }[];
@@ -12,17 +13,18 @@ export default function BarChart({
   height = 140,
   barColor = "#4B7A5B",
 }: BarChartProps) {
+  const { colors } = useTheme();
   const maxValue = Math.max(...data.map((d) => d.value), 1);
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
       <View style={[styles.barsRow, { height }]}>
         {data.map((item, index) => {
           const barHeight = (item.value / maxValue) * (height - 24);
           return (
             <View key={index} style={styles.barCol}>
               {item.value > 0 && (
-                <Text style={styles.barValue} numberOfLines={1}>
+                <Text style={[styles.barValue, { color: colors.textSecondary }]} numberOfLines={1}>
                   {item.value >= 1000
                     ? `${(item.value / 1000).toFixed(1)}k`
                     : item.value.toFixed(0)}
@@ -31,7 +33,7 @@ export default function BarChart({
               <View
                 style={{
                   height: Math.max(barHeight, 3),
-                  backgroundColor: item.value > 0 ? barColor : "#E8F0EB",
+                  backgroundColor: item.value > 0 ? barColor : colors.cardBorder,
                   borderRadius: 6,
                   width: "100%",
                   maxWidth: 28,
@@ -45,7 +47,7 @@ export default function BarChart({
       <View style={styles.labelsRow}>
         {data.map((item, index) => (
           <View key={index} style={styles.barCol}>
-            <Text style={styles.barLabel}>{item.label}</Text>
+            <Text style={[styles.barLabel, { color: colors.textSecondary }]}>{item.label}</Text>
           </View>
         ))}
       </View>
